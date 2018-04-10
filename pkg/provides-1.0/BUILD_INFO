@@ -1,0 +1,1 @@
+PROVIDES=@TEST_LOCALBASE@/lib/libprovides.so

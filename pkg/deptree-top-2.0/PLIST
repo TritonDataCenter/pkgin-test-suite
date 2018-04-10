@@ -1,0 +1,2 @@
+@pkgdep deptree-middle>=2.0
+@blddep deptree-middle-2.0

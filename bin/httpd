@@ -1,0 +1,222 @@
+#!/bin/bash
+#
+# Simple web server to serve packages via socat.
+#
+
+# libfetch requires time formats in GMT
+export TZ=GMT
+
+set -eux
+
+dbgfile=
+errfile=
+pkgdir=
+while getopts ":d:e:p:" opt; do
+	case "${opt}" in
+	d)
+		dbgfile=${OPTARG}
+		;;
+	e)
+		errfile=${OPTARG}
+		;;
+	p)
+		pkgdir=${OPTARG}
+		;;
+	esac
+done
+shift $((OPTIND - 1))
+
+if [ ! -d "${pkgdir}" ]; then
+	echo "usage: $0 -p <pkgdir>" >&2
+	exit 1
+fi
+
+if [ -n "${errfile}" ]; then
+	exec 2>>${errfile}
+fi
+
+ctype_binary="application/octet-stream"
+ctype_html="text/html"
+date_format="%a, %d %b %Y %H:%M:%S %Z"
+
+debuglog()
+{
+	if [ -n "${dbgfile}" ]; then
+		echo "[$$] $@" >>${dbgfile}
+	fi
+}
+
+#
+# Handle messing with certain files to test error conditions:
+#
+# - download-notfound returns 404 even though it exists.
+#
+# - download-mismatch is a file which is served correctly (i.e. the headers
+#   are correct for what is sent), but is not what pkgin is expecting, as it
+#   is reduced to 1/3 of its size.
+#
+# - download-truncate is deliberately cut in half, but the original headers
+#   are left intact.
+#
+sendhdrs()
+{
+	local code=$1; shift
+	local file=$1; shift
+
+	if [[ "${file}" =~ download-notfound ]]; then
+		code=404;
+	fi
+
+	debuglog "   response: code=${code}"
+	case "${code}" in
+	200) printf "HTTP/1.1 200 OK\r\n" ;;
+	400) printf "HTTP/1.1 400 Bad Request\r\n" ;;
+	404) printf "HTTP/1.1 404 Not Found\r\n" ;;
+	*)   return ;;
+	esac
+
+	printf "Server: pkgin-test-suite/0.1\r\n"
+	printf "Date: $(date "+${date_format}")\r\n"
+
+	# Special handling for certain files to trigger test issues.
+	if [[ "${file}" =~ download-notfound ]]; then
+		: Do nothing
+	elif [ -f "${file}" ]; then
+		len=$(wc -c < ${file} | awk '{print $1}')
+		if [[ "${file}" =~ download-mismatch ]]; then
+			len=$((len/2))
+		fi
+		mtime="$(stat -f '%Sm' -t "${date_format}" ${file})"
+		printf "Content-Length: ${len}\r\n"
+		printf "Content-Type: ${ctype_binary}\r\n"
+		printf "Last-Modified: ${mtime}\r\n"
+		debuglog "             len=${len}"
+		debuglog "             ctype=${ctype_binary}"
+		debuglog "             mtime=${mtime}"
+	elif [ -d "${file}" ]; then
+		printf "Content-Type: ${ctype_html}\r\n"
+		debuglog "             ctype=${ctype_html}"
+	fi
+
+	printf "Connection: close\r\n\r\n"
+}
+sendfile()
+{
+	local file=$1; shift
+
+	if [[ "${file}" =~ download-notfound ]]; then
+		: Do nothing
+	elif [[ "${file}" =~ download-truncate ]]; then
+		l=$(wc -c < ${file} | awk '{print $1}')
+		debuglog "truncate ${file} from $l to $((l/2))" 
+		head -c $((l/2)) ${file}
+	elif [[ "${file}" =~ download-mismatch ]]; then
+		l=$(wc -c < ${file} | awk '{print $1}')
+		debuglog "truncate ${file} and headers from $l to $((l/2))"
+		head -c $((l/2)) ${file}
+	else
+		cat -u ${file}
+	fi
+}
+
+senddir()
+{
+	local dir="${1%%/}"; shift
+
+	printf "<html>\r\n"
+	printf "<head><title>Index of ${dir##${pkgdir}}/</title></head>\r\n"
+	printf "<body bgcolor=\"white\">\r\n"
+	printf "<h1>Index of ${dir##${pkgdir}}/</h1><hr><pre><a href=\"../\">../</a>\r\n"
+	ls -1 ${dir} | while read file; do
+		printf "<a href=\"${file}\">${file}</a>\r\n"
+	done
+	printf "</pre><hr></body>\r\n"
+	printf "</html>\r\n"
+}
+
+response()
+{
+	local code ctype dlog reqfile
+	local headreq=false
+	local OPTARG OPTIND
+	while getopts ":c:f:h" opt; do
+		case "${opt}" in
+		c)
+			code=${OPTARG}
+			;;
+		f)
+			reqfile=${OPTARG}
+			;;
+		h)
+			headreq=true
+			;;
+		esac
+	done
+	shift $((OPTIND - 1))
+
+	sendhdrs "${code}" "${reqfile}"
+
+	# Send file request
+	if [ -n "${reqfile}" -a -f "${reqfile}" ]; then
+		if ${headreq}; then
+			debuglog "             HEAD=${reqfile##${pkgdir}}"
+		else
+			debuglog "             GET=${reqfile##${pkgdir}}"
+			sendfile ${reqfile}
+		fi
+	# Send directory listing
+	elif [ -n "${reqfile}" -a -d "${reqfile}" ]; then
+		if ${headreq}; then
+			debuglog "             HEAD=${reqfile##${pkgdir}}"
+		else
+			debuglog "             GET=${reqfile##${pkgdir}}"
+			senddir ${reqfile}
+		fi
+	elif [ -n "${reqfile}" ]; then
+		debuglog "             MISS=${reqfile##${pkgdir}}"
+	fi
+}
+
+debuglog "=> new server for ${pkgdir}"
+
+getfile=
+hflag=
+while read r f rest; do
+	# Get rid of carriage returns as they cause trouble.
+	req=$(echo ${r} | tr -d '\r')
+	file=$(echo ${f} | tr -d '\r')
+
+	# First request, figure out what it is.  If GET or HEAD then
+	# continue, otherwise it's an error (at least for this server).
+	if [ -z "${getfile}" ]; then
+		if [ "$req" = "GET" ]; then
+			getfile="${pkgdir}${file}"
+			continue
+		elif [ "$req" = "HEAD" ]; then
+			getfile="${pkgdir}${file}"
+			hflag="-h"
+			continue
+		else
+			response -c 400
+			break
+		fi
+	fi
+
+	# Keep going until we get a blank line
+	if [ -n "$req" ]; then
+		continue
+	fi
+
+	# We should now have a valid file request and the client is ready for
+	# a response.
+	if [ -d "${getfile}" -o -f "${getfile}" ]; then
+		response -c 200 -f "${getfile}" ${hflag}
+	else
+		response -c 404 -f "${getfile}"
+	fi
+
+	# We're done, close the stream and let socat fork a new instance.
+	break
+done
+
+debuglog "<= exit"

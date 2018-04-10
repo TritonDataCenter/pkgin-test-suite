@@ -1,0 +1,2 @@
+@pkgdep supersedes-dep-[0-9]*
+@blddep supersedes-dep-1.0

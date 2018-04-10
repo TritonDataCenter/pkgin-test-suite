@@ -1,0 +1,1 @@
+REQUIRES=@TEST_LOCALBASE@/lib/libprovides.so

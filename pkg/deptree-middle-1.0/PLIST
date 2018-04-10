@@ -1,0 +1,2 @@
+@pkgdep deptree-bottom-[0-9]*
+@blddep deptree-bottom-1.0

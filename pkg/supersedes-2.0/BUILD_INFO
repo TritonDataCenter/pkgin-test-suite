@@ -1,0 +1,3 @@
+SUPERSEDES=supersedes<2
+SUPERSEDES=supersedes-dep-[0-9]*
+SUPERSEDES=keep-[0-9]*

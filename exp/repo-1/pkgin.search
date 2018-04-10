@@ -1,0 +1,5 @@
+keep-1.0 =           Package should remain at all times.
+
+=: package is installed and up-to-date
+<: package is installed but newer version is available
+>: installed package has a greater version than available package
