@@ -13,7 +13,7 @@ pkg_notfound="download-notfound-1.0"
 @test "${REPO_NAME} verify bad pkg_summary" {
 	# XXX: at some point we should do this, if first is truncated then
 	# just try the next suffix.
-	skip 
+	skip
 	run pkgin update
 	[ ${status} -eq 123 ]
 }

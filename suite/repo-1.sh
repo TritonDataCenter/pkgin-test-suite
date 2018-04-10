@@ -101,7 +101,7 @@ pkg_category="pkgpath"
 	run [ -s ${TEST_PKG_INSTALL_LOG} ]
 	[ ${status} -eq 0 ]
 
-	run grep -v installing ${TEST_PKG_INSTALL_LOG} 
+	run grep -v installing ${TEST_PKG_INSTALL_LOG}
 	[ ${status} -eq 1 ]
 	[ -z "${output}" ]
 }
@@ -235,7 +235,7 @@ pkg_category="pkgpath"
 
 @test "${REPO_NAME} verify pkgin show-all-categories" {
 	for cmd in show-all-categories sac; do
-		run pkgin ${cmd} 
+		run pkgin ${cmd}
 		[ ${status} -eq 0 ]
 		compare_output "pkgin.show-all-categories"
 	done

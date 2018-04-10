@@ -108,7 +108,7 @@ sendfile()
 		: Do nothing
 	elif [[ "${file}" =~ download-truncate ]]; then
 		l=$(wc -c < ${file} | awk '{print $1}')
-		debuglog "truncate ${file} from $l to $((l/2))" 
+		debuglog "truncate ${file} from $l to $((l/2))"
 		head -c $((l/2)) ${file}
 	elif [[ "${file}" =~ download-mismatch ]]; then
 		l=$(wc -c < ${file} | awk '{print $1}')

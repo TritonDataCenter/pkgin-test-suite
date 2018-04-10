@@ -43,7 +43,7 @@
 # symlinked and not copied.
 #
 @test "${REPO_NAME} test packages were symlinked" {
-	run [ -L ${TEST_PKGIN_CACHE}/upgrade-2.0.tgz ] 
+	run [ -L ${TEST_PKGIN_CACHE}/upgrade-2.0.tgz ]
 	[ ${status} -eq 0 ]
 }
 
