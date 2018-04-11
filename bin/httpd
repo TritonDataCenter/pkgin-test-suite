@@ -86,7 +86,8 @@ sendhdrs()
 		if [[ "${file}" =~ download-mismatch ]]; then
 			len=$((len/2))
 		fi
-		mtime="$(stat -f '%Sm' -t "${date_format}" ${file})"
+		# Sorry, crap portability for now :(
+		mtime=$(gdate -r ${file} +"${date_format}")
 		printf "Content-Length: ${len}\r\n"
 		printf "Content-Type: ${ctype_binary}\r\n"
 		printf "Last-Modified: ${mtime}\r\n"
