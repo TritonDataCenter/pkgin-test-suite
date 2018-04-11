@@ -196,52 +196,52 @@ REPO_${pkgcmd:tu}.${repo}=	${REPO_BINDIR.${repo}}/${pkgcmd}
 REPO_DEPS.${repo}+=		${REPO_${pkgcmd:tu}.${repo}}
 REPO_VARS+=			REPO_${pkgcmd:tu}
 ${REPO_${pkgcmd:tu}.${repo}}: ${.MAKE.MAKEFILES}
-	@echo '=> Generating ${.TARGET:Q}'
+	@echo "=> Generating ${.TARGET:Q}"
 	@mkdir -p ${.TARGET:H:Q}
-	@echo '#!/bin/sh' >${.TARGET:Q}
-	@echo ': $${PKG_PATH:=${REPO_PKG_PATH.${repo}}}' >>${.TARGET:Q}
-	@echo ': $${PKG_DBDIR:=${TEST_PKG_DBDIR}}' >>${.TARGET:Q}
-	@echo 'env PKG_PATH=$${PKG_PATH} \\' >>${.TARGET:Q}
-	@echo '    ${SYSTEM_${pkgcmd:tu}} -K $${PKG_DBDIR}' \
-		   '${REPO_${pkgcmd:tu}_ARGS.${repo}}' \
-		   '"$$@"' >>${.TARGET:Q}
+	@echo "#!/bin/sh" >${.TARGET:Q}
+	@echo ": \$${PKG_PATH:=${REPO_PKG_PATH.${repo}}}" >>${.TARGET:Q}
+	@echo ": \$${PKG_DBDIR:=${TEST_PKG_DBDIR}}" >>${.TARGET:Q}
+	@echo "env PKG_PATH=\$${PKG_PATH} \\" >>${.TARGET:Q}
+	@echo "    ${SYSTEM_${pkgcmd:tu}} -K \$${PKG_DBDIR}" \
+		   "${REPO_${pkgcmd:tu}_ARGS.${repo}}" \
+		   "\"\$$@\"" >>${.TARGET:Q}
 	@chmod +x ${.TARGET:Q}
 .  endfor
 REPO_PKGIN.${repo}=		${REPO_BINDIR.${repo}}/pkgin
 REPO_DEPS.${repo}+=		${REPO_PKGIN.${repo}}
 REPO_VARS+=			REPO_PKGIN
 ${REPO_PKGIN.${repo}}: ${.MAKE.MAKEFILES}
-	@echo '=> Generating ${.TARGET:Q}'
+	@echo "=> Generating ${.TARGET:Q}"
 	@mkdir -p ${.TARGET:H:Q}
-	@echo '#!/bin/sh' >${.TARGET:Q}
-	@echo ': $${PKGIN_DBDIR:=${TEST_PKGIN_DBDIR}}' >>${.TARGET:Q}
-	@echo ': $${PKG_INSTALL_DIR:=${REPO_BINDIR.${repo}}}' >>${.TARGET:Q}
-	@echo ': $${PKG_DBDIR:=${TEST_PKG_DBDIR}}' >>${.TARGET:Q}
-	@echo ': $${PKG_REPOS:=${REPO_PKG_PATH.${repo}}}' >>${.TARGET:Q}
-	@echo 'env PKGIN_DBDIR=$${PKGIN_DBDIR} \\' >>${.TARGET:Q}
-	@echo '    PKG_INSTALL_DIR=$${PKG_INSTALL_DIR} \\' >>${.TARGET:Q}
-	@echo '    PKG_DBDIR=$${PKG_DBDIR} \\' >>${.TARGET:Q}
-	@echo '    PKG_REPOS=$${PKG_REPOS} \\' >>${.TARGET:Q}
-	@echo '    ${SYSTEM_PKGIN} "$$@"' >>${.TARGET:Q}
+	@echo "#!/bin/sh" >${.TARGET:Q}
+	@echo ": \$${PKGIN_DBDIR:=${TEST_PKGIN_DBDIR}}" >>${.TARGET:Q}
+	@echo ": \$${PKG_INSTALL_DIR:=${REPO_BINDIR.${repo}}}" >>${.TARGET:Q}
+	@echo ": \$${PKG_DBDIR:=${TEST_PKG_DBDIR}}" >>${.TARGET:Q}
+	@echo ": \$${PKG_REPOS:=${REPO_PKG_PATH.${repo}}}" >>${.TARGET:Q}
+	@echo "env PKGIN_DBDIR=\$${PKGIN_DBDIR} \\" >>${.TARGET:Q}
+	@echo "    PKG_INSTALL_DIR=\$${PKG_INSTALL_DIR} \\" >>${.TARGET:Q}
+	@echo "    PKG_DBDIR=\$${PKG_DBDIR} \\" >>${.TARGET:Q}
+	@echo "    PKG_REPOS=\$${PKG_REPOS} \\" >>${.TARGET:Q}
+	@echo "    ${SYSTEM_PKGIN} \"\$$@\"" >>${.TARGET:Q}
 	@chmod +x ${.TARGET:Q}
 REPO_HTTPD.${repo}=		${REPO_BINDIR.${repo}}/httpd
 REPO_DEPS.${repo}+=		${REPO_HTTPD.${repo}}
 REPO_VARS+=			REPO_HTTPD
 ${REPO_HTTPD.${repo}}: ${.MAKE.MAKEFILES}
-	@echo '=> Generating ${.TARGET:Q}'
+	@echo "=> Generating ${.TARGET:Q}"
 	@mkdir -p ${.TARGET:H:Q}
-	@echo '#!/bin/sh' >${.TARGET:Q}
-	@echo ': $${REPO_HTTP_PORT:=${REPO_HTTP_PORT.${repo}:Q}}' >>${.TARGET:Q}
-	@echo ': $${REPO_HTTPD_ERR:=${REPO_OUTDIR.${repo}:Q}/httpd.err}' >>${.TARGET:Q}
-	@echo ': $${REPO_HTTPD_LOG:=${REPO_OUTDIR.${repo}:Q}/httpd.log}' >>${.TARGET:Q}
-	@echo ': $${REPO_PACKAGES:=${REPO_PACKAGES.${repo}:Q}}' >>${.TARGET:Q}
-	@echo ': $${TEST_HTTPD:=${TEST_HTTPD:Q}}' >>${.TARGET:Q}
-	@echo 'sockopts="reuseaddr,reuseport,fork,keepalive"' >>${.TARGET:Q}
-	@echo 'pkgopts="-p $${REPO_PACKAGES}"' >>${.TARGET:Q}
-	@echo 'dbgopts="-d $${REPO_HTTPD_LOG} -e $${REPO_HTTPD_ERR}"' >>${.TARGET:Q}
-	# Uses 'exec' to ensure pid passed back via $! is correct.
-	@echo 'exec socat tcp-listen:$${REPO_HTTP_PORT},$${sockopts}' \
-		'system:"$${TEST_HTTPD} $${pkgopts} $${dbgopts}"' >>${.TARGET:Q}
+	@echo "#!/bin/sh" >${.TARGET:Q}
+	@echo ": \$${REPO_HTTP_PORT:=${REPO_HTTP_PORT.${repo}:Q}}" >>${.TARGET:Q}
+	@echo ": \$${REPO_HTTPD_ERR:=${REPO_OUTDIR.${repo}:Q}/httpd.err}" >>${.TARGET:Q}
+	@echo ": \$${REPO_HTTPD_LOG:=${REPO_OUTDIR.${repo}:Q}/httpd.log}" >>${.TARGET:Q}
+	@echo ": \$${REPO_PACKAGES:=${REPO_PACKAGES.${repo}:Q}}" >>${.TARGET:Q}
+	@echo ": \$${TEST_HTTPD:=${TEST_HTTPD:Q}}" >>${.TARGET:Q}
+	@echo "sockopts=\"reuseaddr,fork,keepalive\"" >>${.TARGET:Q}
+	@echo "pkgopts=\"-p \$${REPO_PACKAGES}\"" >>${.TARGET:Q}
+	@echo "dbgopts=\"-d \$${REPO_HTTPD_LOG} -e \$${REPO_HTTPD_ERR}\"" >>${.TARGET:Q}
+	# Uses "exec" to ensure pid passed back via $! is correct.
+	@echo "exec socat tcp-listen:\$${REPO_HTTP_PORT},\$${sockopts}" \
+		"system:\"\$${TEST_HTTPD} \$${pkgopts} \$${dbgopts}\"" >>${.TARGET:Q}
 	@chmod +x ${.TARGET:Q}
 #
 # Generate REPO_VARS
