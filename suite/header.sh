@@ -119,6 +119,17 @@ pkgin_autoremove()
 	# XXX; -y should just work imho
 	echo "y" | pkgin autoremove
 }
+#
+# Wrappers for broken commands.
+#
+gnudiff()
+{
+	if diff --version >/dev/null 2>&1; then
+		diff "$@"
+	else
+		gdiff "$@"
+	fi
+}
 
 #
 # Many tests will compare pkg_info and pkgin output to what is expected, so it
@@ -131,7 +142,7 @@ compare_output()
 	# This function expects that a command has just been executed.
 	echo "${output}" >${REPO_OUTDIR}/${outfile}
 
-	run diff -u ${REPO_EXPDIR}/${outfile} ${REPO_OUTDIR}/${outfile}
+	run gnudiff -u ${REPO_EXPDIR}/${outfile} ${REPO_OUTDIR}/${outfile}
 	[ "$status" -eq 0 ]
 	[ -z "${output}" ]
 }
