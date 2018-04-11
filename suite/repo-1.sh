@@ -152,7 +152,7 @@ pkg_category="pkgpath"
 }
 @test "${REPO_NAME} verify pkgin show-keep" {
 	for cmd in show-keep sk; do
-		run pkgin ${cmd}
+		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
 			compare_output "pkgin-0.9.4.show-keep"
@@ -163,7 +163,7 @@ pkg_category="pkgpath"
 }
 @test "${REPO_NAME} verify pkgin show-no-keep" {
 	for cmd in show-no-keep snk; do
-		run pkgin ${cmd}
+		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
 			compare_output "pkgin-0.9.4.show-no-keep"

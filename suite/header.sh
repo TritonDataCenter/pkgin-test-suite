@@ -110,6 +110,10 @@ pkg_info_sorted()
 {
 	${REPO_PKG_INFO} "$@" | sort
 }
+pkgin_sorted()
+{
+	${REPO_PKGIN} "$@" | sort
+}
 pkgin_autoremove()
 {
 	# XXX; -y should just work imho
