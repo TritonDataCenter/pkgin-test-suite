@@ -123,7 +123,12 @@ PKG_COMPRESSION=		gzip
 #
 # Create some absurd sizes to test failure scenarios.
 #
-REPO_FILTER.repo-6=		awk '/^PKGNAME/{p=($$1 ~ /=badfilesize/) ? 1 : 0} /^FILE_SIZE/ {if (p) {sub(/=.*/, "=09876543210987654321")}} {print}'
+REPO_FILTER.repo-6=		awk '/^PKGNAME/ && $$1 ~ /badfilesize/ {p=1} \
+				     /^PKGNAME/ && ! $$1 ~ /badfilesize/ {p=0} \
+				     /^FILE_SIZE/ && p { \
+				       sub("=.*", "=09876543210987654321") \
+				     } \
+				     {print}'
 PKG_SIZE_PKG.badsizepkg-1.0=	12345678901234567890
 
 #
