@@ -175,12 +175,9 @@ REPO_PKG_INSTALL_DIR.${repo}=	${REPO_BINDIR.${repo}}
 .  if !empty(REPO_URL.${repo}:Mhttp*)
 REPO_HTTP_PORT.${repo}=		${REPO_URL.${repo}:C/.*://}
 REPO_PKG_PATH.${repo}=		${REPO_URL.${repo}}
-.  elif !empty(REPO_URL.${repo}:Mfile*)
-REPO_HTTP_PORT.${repo}=
-REPO_PKG_PATH.${repo}=		${REPO_URL.${repo}}${REPO_PACKAGES.${repo}:Q}
 .  else
 REPO_HTTP_PORT.${repo}=
-REPO_PKG_PATH.${repo}=		${REPO_PACKAGES.${repo}:Q}
+REPO_PKG_PATH.${repo}=		file://${REPO_PACKAGES.${repo}:Q}
 .  endif
 #
 REPO_VARS+=			REPO_NAME REPO_BINDIR REPO_EXPDIR REPO_OUTDIR
