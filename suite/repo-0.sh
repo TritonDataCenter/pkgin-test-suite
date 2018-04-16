@@ -250,8 +250,19 @@ pkg_nonexist="pkg-does-not-exist"
 	done
 }
 @test "${REPO_NAME} test pkgin usage" {
+	# Invalid command
 	run pkgin ojnk
 	[ ${status} -eq 1 ]
+	compare_output "pkgin.usage"
+
+	# Test running with no commands for argc/argv usage
+	run pkgin
+	[ ${status} -eq 1 ]
+	compare_output "pkgin.usage"
+
+	# Explicitly asking for help should return success
+	run pkgin -h
+	[ ${status} -eq 0 ]
 	compare_output "pkgin.usage"
 }
 
