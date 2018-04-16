@@ -147,7 +147,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in autoremove ar; do
 		run pkgin ${cmd}
 		[ ${status} -eq 1 ]
-		output_match "no packages have been installed"
+		output_match "no packages have been marked as keepable"
 	done
 }
 @test "${REPO_NAME} test pkgin show-keep" {
