@@ -143,14 +143,15 @@ tap: bats-tap
 
 #
 # Generate the default build-info file.  This contains the absolute minimum
-# required by pkg_install to create a valid package, and the values are taken
-# directly from the system pkg_install.  This ensures we use the correct values
-# for MACHINE_ARCH, OPSYS, etc.
+# required by pkg_install to create a valid package.  Unfortunately we can't
+# determine these from pkg_install as it may be part of the base system, so
+# we have to somewhat hardcode for now.
 #
 BI_VARS=	MACHINE_ARCH OPSYS OS_VERSION PKGTOOLS_VERSION
-.for var in ${BI_VARS}
-BI_${var}!=	${SYSTEM_PKG_INFO} -Q ${var} pkg_install
-.endfor
+BI_MACHINE_ARCH=	${MACHINE_ARCH}
+BI_OPSYS!=		uname -s
+BI_OS_VERSION!=		uname -r
+BI_PKGTOOLS_VERSION=	20091115
 ${TEST_BUILDINFO}: ${.MAKE.MAKEFILES}
 	@mkdir -p ${.TARGET:H:Q}
 	@rm -f ${.TARGET:Q}
