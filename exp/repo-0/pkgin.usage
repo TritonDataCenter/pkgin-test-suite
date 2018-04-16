@@ -1,31 +1,31 @@
 Usage: pkgin [-cdfFhlnPtvVy] command [package ...]
 
 Commands and shortcuts:
-list                (ls  ) -  List installed packages.
-avail               (av  ) -  List available packages.
-install             (in  ) -  Perform packages installation or upgrade.
-update              (up  ) -  Create and populate the initial database.
-remove              (rm  ) -  Remove packages and depending packages.
-upgrade             (ug  ) -  Upgrade main packages to their newer versions.
-full-upgrade        (fug ) -  Upgrade all packages to their newer versions.
-show-deps           (sd  ) -  Display direct dependencies.
-show-full-deps      (sfd ) -  Display dependencies recursively.
-show-rev-deps       (srd ) -  Display reverse dependencies recursively.
-show-category       (sc  ) -  Show packages belonging to category.
-show-pkg-category   (spc ) -  Show package's category.
-show-all-categories (sac ) -  Show all categories.
-keep                (ke  ) -  Mark package as "non auto-removable".
-unkeep              (uk  ) -  Mark package as "auto-removable".
-show-keep           (sk  ) -  Display "non auto-removable" packages.
-show-no-keep        (snk ) -  Display "auto-removable" packages.
-search              (se  ) -  Search for a package.
-clean               (cl  ) -  Clean packages cache.
-autoremove          (ar  ) -  Autoremove orphan dependencies.
-export              (ex  ) -  Export "non auto-removable" packages to stdout.
-import              (im  ) -  Import "non auto-removable" package list from file.
-provides            (prov) -  Show what files a package provides.
-requires            (req ) -  Show what files a package requires.
-pkg-content         (pc  ) -  Show remote package's content.
-pkg-descr           (pd  ) -  Show remote package's long-description.
-pkg-build-defs      (pbd ) -  Show remote package's build definitions.
-stats               (st  ) -  Packages statistics.
+list                (ls  ) - List installed local packages
+avail               (av  ) - List all available remote packages
+search              (se  ) - Search for a remote package
+install             (in  ) - Install or upgrade packages
+update              (up  ) - Refresh local and remote package lists
+upgrade             (ug  ) - Upgrade only packages marked with the keep flag
+full-upgrade        (fug ) - Upgrade all packages
+remove              (rm  ) - Remove packages and any dependent packages
+keep                (ke  ) - Mark packages that should be kept
+unkeep              (uk  ) - Mark packages that can be autoremoved
+export              (ex  ) - Display PKGPATH for all keep packages
+import              (im  ) - Import keep package list from file
+show-keep           (sk  ) - Display keep packages
+show-no-keep        (snk ) - Display autoremovable packages
+autoremove          (ar  ) - Remove orphaned dependencies
+clean               (cl  ) - Remove downloaded package files
+show-deps           (sd  ) - List remote package direct dependencies
+show-full-deps      (sfd ) - List remote package full dependencies
+show-rev-deps       (srd ) - List local package reverse dependencies
+provides            (prov) - Show which shared libraries a package provides
+requires            (req ) - Show which shared libraries a package requires
+show-category       (sc  ) - List all packages belonging to a category
+show-pkg-category   (spc ) - Show categories a package belongs to
+show-all-categories (sac ) - List all known categories
+pkg-content         (pc  ) - Show remote package content
+pkg-descr           (pd  ) - Show remote package long-description
+pkg-build-defs      (pbd ) - Show remote package build definitions
+stats               (st  ) - Show local and remote package statistics
