@@ -181,7 +181,7 @@ output_match()
 }
 output_not_match()
 {
-	[[ ${output} =~ $1 ]] && false
+	[[ ! ${output} =~ $1 ]] || false
 }
 line_match()
 {
