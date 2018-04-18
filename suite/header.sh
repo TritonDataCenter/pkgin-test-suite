@@ -179,6 +179,10 @@ output_match()
 {
 	[[ ${output} =~ $1 ]] || false
 }
+output_not_match()
+{
+	[[ ${output} =~ $1 ]] && false
+}
 line_match()
 {
 	lineno=$1; shift
