@@ -4,6 +4,4 @@ deptree-middle-1.0   Package is in the middle of a dependency tree.
 deptree-top-1.0      Package is at the top of a dependency tree.
 keep-1.0             Package should remain at all times.
 pkgpath-1.0          Package should not be upgraded by newer pkgpath.
-supersedes-1.0       Package will be superseded by 2.0
-supersedes-dep-1.0   Package is a dependency of supersedes-1.0, conflicts with supersedes-2.0
 upgrade-1.0          Package should be upgraded to newer upgrade.

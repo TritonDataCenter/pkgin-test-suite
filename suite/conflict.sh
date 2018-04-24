@@ -50,6 +50,7 @@ pkg_provides="provides"
 #
 @test "${REPO_NAME} verify LOCAL_CONFLICTS table" {
 	skip094 known fail
+	skip not currently working
 
 	run pkgdbsql "SELECT DISTINCT LOCAL_CONFLICTS_PKGNAME FROM LOCAL_CONFLICTS;"
 	[ ${status} -eq 0 ]

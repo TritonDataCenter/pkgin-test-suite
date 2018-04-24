@@ -55,81 +55,115 @@ TEST_SUBST+=	-e 's,@${var}@,${${var}:Q},g'
 
 
 #
-# Set some per-repository and per-package build variables used later.
+# List of test repositories.  Order is important as some tests (e.g. upgrades)
+# require state from a prior test run.
 #
-REPOSITORIES=			repo-0 repo-1 repo-2 repo-3 repo-4 repo-5 repo-6
+REPOSITORIES+=		empty		# Tests against an empty repository
+REPOSITORIES+=		install		# Test basic package installs
+REPOSITORIES+=		upgrade		# Test package upgrades
+REPOSITORIES+=		conflict	# Test package conflicts
+REPOSITORIES+=		invalid		# Test invalid packages
+REPOSITORIES+=		file-dl		# Test file:// downloads
+REPOSITORIES+=		http-dl		# Test http:// downloads
 #
-# Repositories have a specific set of packages available, to enable testing of
-# various scenarios.
+# Per-repository variables and their defaults.  Repositories set their own
+# using <REPO_VAR>.<repo>
 #
-#	repo-0	Empty package list, tests initialisation.
-#	repo-1	Initial package list, basic installs and downloads.
-#	repo-2	Upgraded package list, upgrades and removals.
-#	repo-3	Conflicts.
-#	repo-4	Removals.
-#	repo-5	Download failures.
+#	REPO_NAME is used in the test suite scripts to print the name of the
+#	test suite for each test.  Mandatory for each repository.
 #
-REPO_PKGLIST.repo-0=		# empty
+REPO_VARS+=		REPO_NAME
+REPO_NAME.empty=	empty-repository
+REPO_NAME.install=	package-installs
+REPO_NAME.upgrade=	package-upgrades
+REPO_NAME.conflict=	package-conflicts
+REPO_NAME.invalid=	invalid-packages
+REPO_NAME.file-dl=	file-downloads
+REPO_NAME.http-dl=	http-downloads
 #
-REPO_PKGLIST.repo-1=		keep-1.0 pkgpath-1.0 upgrade-1.0 builddate-1.0
-REPO_PKGLIST.repo-1+=		deptree-top-1.0 deptree-middle-1.0
-REPO_PKGLIST.repo-1+=		deptree-bottom-1.0
-REPO_PKGLIST.repo-1+=		supersedes-1.0 supersedes-dep-1.0
+#	REPO_PKGLIST contains a list of packages from pkg/ that are included
+#	in the pkg_summary for this repository.  Mandatory, even if empty.
+#	Note that pkgin-0.9.4 does not work against an empty pkgdb, so it is
+#	helpful to at least install keep-1.0 via pkg_add before starting tests.
 #
-REPO_PKGLIST.repo-2=		keep-1.0 pkgpath-2.0 upgrade-2.0 builddate-1.0
-REPO_PKGLIST.repo-2+=		deptree-middle-2.0 deptree-top-2.0 supersedes-2.0
+REPO_VARS+=		REPO_PKGLIST
+REPO_PKGLIST.empty=	# no packages by design
+REPO_PKGLIST.install=	keep-1.0 pkgpath-1.0 upgrade-1.0 builddate-1.0
+REPO_PKGLIST.install+=	deptree-top-1.0 deptree-middle-1.0 deptree-bottom-1.0
+#REPO_PKGLIST.install+=	supersedes-1.0 supersedes-dep-1.0
+REPO_PKGLIST.upgrade=	keep-1.0 pkgpath-2.0 upgrade-2.0 builddate-1.0
+REPO_PKGLIST.upgrade+=	deptree-middle-2.0 deptree-top-2.0 # supersedes-2.0
+REPO_PKGLIST.conflict=	conflict-pkgcfl-1.0 conflict-plist-1.0
+REPO_PKGLIST.conflict+=	provides-1.0 requires-1.0
+REPO_PKGLIST.invalid=	badfilesize-1.0 badsizepkg-1.0
+REPO_PKGLIST.file-dl=	keep-1.0 download-ok-1.0 download-notfound-1.0
+REPO_PKGLIST.file-dl+=	download-truncate-1.0 download-mismatch-1.0
+REPO_PKGLIST.http-dl=	keep-1.0 download-ok-1.0 download-notfound-1.0
+REPO_PKGLIST.http-dl+=	download-truncate-1.0 download-mismatch-1.0
 #
-REPO_PKGLIST.repo-3=		conflict-pkgcfl-1.0 conflict-plist-1.0
-REPO_PKGLIST.repo-3+=		provides-1.0 requires-1.0
+#	REPO_EPOCH is used to ensure each repository is build with different
+#	date information.  This is used to generate BUILD_DATE for packages,
+#	touch the pkg_summary to indicate it has been changed, and by the
+#	httpd to report the last modified date of files it serves.
 #
-REPO_PKGLIST.repo-4=		keep-1.0 download-ok-1.0 download-notfound-1.0
+REPO_VARS+=		REPO_EPOCH
+REPO_EPOCH.empty=	00
+REPO_EPOCH.install=	01
+REPO_EPOCH.upgrade=	02
+REPO_EPOCH.conflict=	03
+REPO_EPOCH.invalid=	04
+REPO_EPOCH.file-dl=	05
+REPO_EPOCH.http-dl=	06
 #
-REPO_PKGLIST.repo-5=		download-ok-1.0 download-notfound-1.0
-REPO_PKGLIST.repo-5+=		download-truncate-1.0 download-mismatch-1.0
+#	REPO_URL sets the base URL for the repository.  The default uses our
+#	custom httpd which helps to generate certain failure modes.
 #
-REPO_PKGLIST.repo-6=		badfilesize-1.0 badsizepkg-1.0
+REPO_VARS+=		REPO_URL
+REPO_URL=		http://127.0.0.1:57191
+REPO_URL.file-dl=	file://
 #
-# Ensure that BUILD_DATE changes between repo-1 and repo-2 so that we can test
-# the refresh functionality.  Set the default somewhere in between to test for
-# it going backwards (currently unsupported, it's just a string compare).
+#	REPO_SUBST is used to supply arbitrary substitutions in the test
+#	script, useful to avoid hardcoding package names etc.  This is used
+#	later to substitute REPO_VARS so does not need to be added to itself.
 #
-REPO_VARS+=			REPO_BUILD_DATE
-REPO_BUILD_DATE.repo-1=		2018-02-26 12:34:56 +0000
-REPO_BUILD_DATE.repo-2=		2018-02-26 12:34:58 +0000
-REPO_BUILD_DATE=		2018-02-26 12:34:57 +0000
+REPO_SUBST=		# empty
+REPO_SUBST.file-dl+=	-e 's,@PKG_OK@,download-ok-1.0,g'
+REPO_SUBST.file-dl+=	-e 's,@PKG_NOTFOUND@,download-notfound-1.0,g'
+REPO_SUBST.file-dl+=	-e 's,@PKG_TRUNCATE@,download-truncate-1.0,g'
+REPO_SUBST.file-dl+=	-e 's,@PKG_MISMATCH@,download-mismatch-1.0,g'
+REPO_SUBST.http-dl+=	-e 's,@PKG_OK@,download-ok-1.0,g'
+REPO_SUBST.http-dl+=	-e 's,@PKG_NOTFOUND@,download-notfound-1.0,g'
+REPO_SUBST.http-dl+=	-e 's,@PKG_TRUNCATE@,download-truncate-1.0,g'
+REPO_SUBST.http-dl+=	-e 's,@PKG_MISMATCH@,download-mismatch-1.0,g'
+
+
 #
-# Repository URL.  This is handled specially later to extract the port, etc.
-# If left undefined then a plain path is used.
+# Per-package variables and their defaults.
 #
-REPO_VARS+=			REPO_URL
-REPO_URL.repo-0=		http://127.0.0.1:57190
-REPO_URL.repo-1=		http://127.0.0.1:57191
-REPO_URL.repo-2=		file://
-REPO_URL.repo-5=		http://127.0.0.1:57195
-REPO_URL.repo-6=		http://127.0.0.1:57196
-#
-# Test different pkg_summary compression schemes.
-#
-REPO_SUM_COMPRESSION.repo-5=	bzip2 gzip
-REPO_SUM_COMPRESSION=		gzip
-#
-# Per-package package compression.  This is important for the BUILD_DATE test
-# as we need to ensure that nothing other than the BUILD_DATE changes, and if
-# using compression the FILE_SIZE might change too and mask failure modes.
+#	PKG_COMPRESSION sets the compression type for a package.  Default is
+#	"none" as packages may be dependent upon FILE_SIZE which can differ
+#	depending on various things.
 #
 PKG_VARS+=			PKG_COMPRESSION
-PKG_COMPRESSION.builddate-1.0=	none
-PKG_COMPRESSION=		gzip
+PKG_COMPRESSION=		none
 #
-# Create some absurd sizes to test failure scenarios.
+#	PKG_SUMFILTER is a command that the "pkg_info -X" summary generation
+#	is passed through, allowing for modifications to the data.  Note that
+#	calling pkg_info within a test run will still return the original data,
+#	which is why we have PKG_PKGPATH etc below to enforce both.
 #
-REPO_FILTER.repo-6=		awk '/^PKGNAME/ && $$1 ~ /badfilesize/ {p=1} \
-				     /^PKGNAME/ && ! $$1 ~ /badfilesize/ {p=0} \
-				     /^FILE_SIZE/ && p { \
-				       sub("=.*", "=09876543210987654321") \
-				     } \
-				     {print}'
-PKG_SIZE_PKG.badsizepkg-1.0=	12345678901234567890
+PKG_VARS+=			PKG_SUMFILTER
+PKG_SUMFILTER=			cat
+PKG_SUMFILTER.badfilesize-1.0=	sed -e '/^FILE_SIZE/s/=.*/=987654321987654321/'
+PKG_SUMFILTER.badsizepkg-1.0=	sed -e '/^SIZE_PKG/s/=.*/=123456789123456789/'
+#
+#	PKG_PKGPATH sets PKGPATH for the specified package, otherwise a default
+#	of "testsuite/<pkg>" is used.
+#
+PKG_VARS+=			PKG_PKGPATH
+PKG_PKGPATH.pkgpath-1.0=	testsuite/pkgpath1
+PKG_PKGPATH.pkgpath-2.0=	testsuite/pkgpath2
+
 
 #
 # All configuration should be done by this point.  Start generating the test
@@ -164,7 +198,6 @@ ${TEST_BUILDINFO}: ${.MAKE.MAKEFILES}
 # Generate the repositories.
 #
 .for repo in ${REPOSITORIES}
-REPO_NAME.${repo}=		${repo}
 REPO_BINDIR.${repo}=		${TEST_WORKDIR}/${repo}/bin
 REPO_EXPDIR.${repo}=		${TEST_EXPDIR}/${repo}
 REPO_OUTDIR.${repo}=		${TEST_WORKDIR}/${repo}/out
@@ -172,17 +205,28 @@ REPO_WRKDIR.${repo}=		${TEST_WORKDIR}/${repo}
 REPO_PACKAGES.${repo}=		${TEST_WORKDIR}/${repo}/packages
 REPO_PKG_INSTALL_DIR.${repo}=	${REPO_BINDIR.${repo}}
 #
+.  if !defined(REPO_URL.${repo})
+REPO_URL.${repo}=		${REPO_URL}
+.  endif
 .  if !empty(REPO_URL.${repo}:Mhttp*)
 REPO_HTTP_PORT.${repo}=		${REPO_URL.${repo}:C/.*://}
 REPO_PKG_PATH.${repo}=		${REPO_URL.${repo}}
-.  else
+.  elif !empty(REPO_URL.${repo}:Mfile*)
 REPO_HTTP_PORT.${repo}=
 REPO_PKG_PATH.${repo}=		file://${REPO_PACKAGES.${repo}:Q}
 .  endif
 #
-REPO_VARS+=			REPO_NAME REPO_BINDIR REPO_EXPDIR REPO_OUTDIR
+# Time formats.  BUILD_DATE for pkg_create matching what pkgsrc uses,
+# HTTPD_TIME in HTTP format for the httpd, and TOUCH for touch(1).
+#
+REPO_BUILD_DATE.${repo}=	2018-02-26 12:34:${REPO_EPOCH.${repo}} +0000
+REPO_HTTPD_TIME.${repo}=	Mon, 26 Feb 2018 12:34:${REPO_EPOCH.${repo}} GMT
+REPO_TOUCH.${repo}=		201802261234.${REPO_EPOCH.${repo}}
+#
+REPO_VARS+=			REPO_BINDIR REPO_EXPDIR REPO_OUTDIR
 REPO_VARS+=			REPO_WRKDIR REPO_PACKAGES REPO_PKG_INSTALL_DIR
 REPO_VARS+=			REPO_HTTP_PORT REPO_PKG_PATH
+REPO_VARS+=			REPO_BUILD_DATE REPO_LAST_MODIFIED REPO_TOUCH
 #
 # Generate pkg* wrappers.  Each repository gets its own wrapper so that we
 # can run them standalone if necessary as it is helpful for debugging.
@@ -216,11 +260,12 @@ ${REPO_PKGIN.${repo}}: ${.MAKE.MAKEFILES}
 	@echo ": \$${PKG_INSTALL_DIR:=${REPO_BINDIR.${repo}}}" >>${.TARGET:Q}
 	@echo ": \$${PKG_DBDIR:=${TEST_PKG_DBDIR}}" >>${.TARGET:Q}
 	@echo ": \$${PKG_REPOS:=${REPO_PKG_PATH.${repo}}}" >>${.TARGET:Q}
+	@echo ": \$${SYSTEM_PKGIN:=${SYSTEM_PKGIN}}" >>${.TARGET:Q}
 	@echo "env PKGIN_DBDIR=\$${PKGIN_DBDIR} \\" >>${.TARGET:Q}
 	@echo "    PKG_INSTALL_DIR=\$${PKG_INSTALL_DIR} \\" >>${.TARGET:Q}
 	@echo "    PKG_DBDIR=\$${PKG_DBDIR} \\" >>${.TARGET:Q}
 	@echo "    PKG_REPOS=\$${PKG_REPOS} \\" >>${.TARGET:Q}
-	@echo "    ${SYSTEM_PKGIN} \"\$$@\"" >>${.TARGET:Q}
+	@echo "    \$${SYSTEM_PKGIN} \"\$$@\"" >>${.TARGET:Q}
 	@chmod +x ${.TARGET:Q}
 REPO_HTTPD.${repo}=		${REPO_BINDIR.${repo}}/httpd
 REPO_DEPS.${repo}+=		${REPO_HTTPD.${repo}}
@@ -230,16 +275,17 @@ ${REPO_HTTPD.${repo}}: ${.MAKE.MAKEFILES}
 	@mkdir -p ${.TARGET:H:Q}
 	@echo "#!/bin/sh" >${.TARGET:Q}
 	@echo ": \$${REPO_HTTP_PORT:=${REPO_HTTP_PORT.${repo}:Q}}" >>${.TARGET:Q}
+	@echo ": \$${REPO_HTTPD_TIME:=${REPO_HTTPD_TIME.${repo}}}" >>${.TARGET:Q}
 	@echo ": \$${REPO_HTTPD_ERR:=${REPO_OUTDIR.${repo}:Q}/httpd.err}" >>${.TARGET:Q}
 	@echo ": \$${REPO_HTTPD_LOG:=${REPO_OUTDIR.${repo}:Q}/httpd.log}" >>${.TARGET:Q}
 	@echo ": \$${REPO_PACKAGES:=${REPO_PACKAGES.${repo}:Q}}" >>${.TARGET:Q}
 	@echo ": \$${TEST_HTTPD:=${TEST_HTTPD:Q}}" >>${.TARGET:Q}
+	@echo "export REPO_PACKAGES REPO_HTTPD_TIME" >>${.TARGET:Q}
+	@echo "export REPO_HTTPD_ERR REPO_HTTPD_LOG" >>${.TARGET:Q}
 	@echo "sockopts=\"reuseaddr,fork,keepalive\"" >>${.TARGET:Q}
-	@echo "pkgopts=\"-p \$${REPO_PACKAGES}\"" >>${.TARGET:Q}
-	@echo "dbgopts=\"-d \$${REPO_HTTPD_LOG} -e \$${REPO_HTTPD_ERR}\"" >>${.TARGET:Q}
 	# Uses "exec" to ensure pid passed back via $! is correct.
 	@echo "exec socat tcp-listen:\$${REPO_HTTP_PORT},\$${sockopts}" \
-		"system:\"\$${TEST_HTTPD} \$${pkgopts} \$${dbgopts}\"" >>${.TARGET:Q}
+		"system:\"\$${TEST_HTTPD}\"" >>${.TARGET:Q}
 	@chmod +x ${.TARGET:Q}
 #
 # Generate REPO_VARS
@@ -248,7 +294,9 @@ ${REPO_HTTPD.${repo}}: ${.MAKE.MAKEFILES}
 REPO_SUBST.${repo}+=		-e 's,@${var}@,${${var}.${repo}:Q},g'
 .  endfor
 #
-# Generate packages
+# Generate packages.  The eventual artefects are the individual pkg-summary
+# files, rather than the package files.  This allows us to easily modify the
+# pkg-summary files to provide bogus values.
 #
 .  for pkg in ${REPO_PKGLIST.${repo}}
 PKG_PKGDIR.${repo}.${pkg}=	${TEST_PACKAGEDIR}/${pkg}
@@ -258,7 +306,8 @@ PKG_DESCR.${repo}.${pkg}=	${PKG_COMMENT.${repo}.${pkg}}
 PKG_FILES.${repo}.${pkg}=	${PKG_PKGDIR.${repo}.${pkg}}/files
 PKG_PLIST.${repo}.${pkg}=	${PKG_PKGDIR.${repo}.${pkg}}/PLIST
 PKGFILE.${repo}.${pkg}=		${REPO_PACKAGES.${repo}}/${pkg}.tgz
-PKGFILES.${repo}+=		${PKGFILE.${repo}.${pkg}}
+PKGSUMFILE.${repo}.${pkg}=	${REPO_WRKDIR.${repo}}/pkg-summary/${pkg}
+PKGSUMFILES.${repo}+=		${PKGSUMFILE.${repo}.${pkg}}
 #
 # Generate PKG_VARS
 #
@@ -273,9 +322,10 @@ REPOPKG_BUILDINFO.${repo}.${pkg}:=	${REPO_WRKDIR.${repo}}/build-info/${pkg}
 ${REPOPKG_BUILDINFO.${repo}.${pkg}}: ${PKG_BUILDINFO.${repo}.${pkg}}
 .    endif
 ${REPOPKG_BUILDINFO.${repo}.${pkg}}: ${TEST_BUILDINFO}
-	#@echo '=> Generating ${.TARGET:Q}'
 	@mkdir -p ${.TARGET:H:Q}
 	@cat ${TEST_BUILDINFO} >${.TARGET:Q}
+	@echo "BUILD_DATE=${REPO_BUILD_DATE.${repo}}" >>${.TARGET:Q}
+	@echo "PKGPATH=${PKG_PKGPATH.${pkg}:Utestsuite/${pkg:C/-[0-9].*$//}}" >>${.TARGET:Q}
 .    if exists(${PKG_BUILDINFO.${repo}.${pkg}})
 	@sed ${SYSTEM_SUBST} ${TEST_SUBST} ${REPO_SUBST.${repo}} \
 		${PKG_SUBST.${repo}${pkg}} ${PKG_BUILDINFO.${repo}.${pkg}} \
@@ -289,7 +339,6 @@ REPOPKG_FILES.${repo}.${pkg}:=		${PKG_FILES.${repo}.${pkg}}
 .    else
 REPOPKG_FILES.${repo}.${pkg}:=		${REPO_WRKDIR.${repo}}/files/${pkg}
 ${REPOPKG_FILES.${repo}.${pkg}}:
-	#@echo '=> Generating ${.TARGET:Q}'
 	@mkdir -p ${.TARGET:Q}/share/doc
 	@echo ${pkg} >${.TARGET:Q}/share/doc/${pkg:C/-[0-9].*//}
 .    endif
@@ -298,7 +347,6 @@ ${REPOPKG_FILES.${repo}.${pkg}}:
 #
 REPOPKG_PLIST.${repo}.${pkg}:=		${REPO_WRKDIR.${repo}}/plist/${pkg}
 ${REPOPKG_PLIST.${repo}.${pkg}}: ${REPOPKG_FILES.${repo}.${pkg}}
-	#@echo '=> Generating ${.TARGET:Q}'
 	@mkdir -p ${.TARGET:H:Q}
 	@(cd ${REPOPKG_FILES.${repo}.${pkg}}; find * -type f) >${.TARGET:Q}
 .    if exists(${PKG_PLIST.${repo}.${pkg}})
@@ -310,8 +358,8 @@ ${REPOPKG_PLIST.${repo}.${pkg}}: ${REPOPKG_FILES.${repo}.${pkg}}
 PKGREPO_SIZEPKG.${repo}.${pkg}=	${REPO_WRKDIR.${repo}}/size-pkg/${pkg}
 ${PKGREPO_SIZEPKG.${repo}.${pkg}}: ${REPOPKG_PLIST.${repo}.${pkg}}
 	@mkdir -p ${.TARGET:H:Q}
-.  if defined(PKG_SIZE_PKG.${pkg})
-	@echo ${PKG_SIZE_PKG.${pkg}} >${.TARGET}
+.  if defined(PKG_SIZEPKG.${pkg})
+	@echo ${PKG_SIZEPKG.${pkg}} >${.TARGET}
 .  else
 	@cat ${REPOPKG_PLIST.${repo}.${pkg}} | \
 	    awk '/^@/ { next } \
@@ -344,6 +392,14 @@ ${PKGFILE.${repo}.${pkg}}: ${REPOPKG_PLIST.${repo}.${pkg}}
 	    ${.TARGET:Q}; then \
 		rm -f ${.TARGET:Q}; exit 1; \
 	fi
+#
+#  - Generate per-package pkg_summary files
+#
+${PKGSUMFILE.${repo}.${pkg}}: ${PKGFILE.${repo}.${pkg}}
+	@echo '=> Generating ${.TARGET:Q}'
+	@mkdir -p ${.TARGET:H:Q}
+	@${SYSTEM_PKG_INFO} -X ${PKGFILE.${repo}.${pkg}} \
+	    | ${PKG_SUMFILTER.${pkg}:U${PKG_SUMFILTER}} >${.TARGET:Q}
 .  endfor
 #
 # Generate pkg_summary files for each repository.
@@ -353,19 +409,16 @@ _COMPRESS_OUT.gzip=	pkg_summary.gz
 _COMPRESS_CMD.bzip2=	bzip2 -9
 _COMPRESS_OUT.bzip2=	pkg_summary.bz2
 .  for c in gzip bzip2
-.    if !empty(REPO_SUM_COMPRESSION.${repo}:U${REPO_SUM_COMPRESSION}:M${c})
 REPO_DEPS.${repo}+=		${REPO_PACKAGES.${repo}}/${_COMPRESS_OUT.${c}}
-${REPO_PACKAGES.${repo}}/${_COMPRESS_OUT.${c}}: ${PKGFILES.${repo}}
+${REPO_PACKAGES.${repo}}/${_COMPRESS_OUT.${c}}: ${PKGSUMFILES.${repo}}
 	@echo '=> Generating ${.TARGET:Q}'
 	@mkdir -p ${.TARGET:H:Q}
-.      if defined(PKGFILES.${repo})
-	@${SYSTEM_PKG_INFO} -X ${PKGFILES.${repo}} \
-		| ${REPO_FILTER.${repo}:Ucat} \
-		| ${_COMPRESS_CMD.${c}} >${.TARGET:Q}
-.      else
+.    if defined(PKGSUMFILES.${repo})
+	@cat ${PKGSUMFILES.${repo}} | ${_COMPRESS_CMD.${c}} >${.TARGET:Q}
+.    else
 	@echo | ${_COMPRESS_CMD.${c}} >${.TARGET:Q}
-.      endif
 .    endif
+	@touch -t ${REPO_TOUCH.${repo}} ${.TARGET:Q}
 .  endfor
 #
 # Generate per-repository bats test scripts.

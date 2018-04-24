@@ -1,48 +1,34 @@
 #!/usr/bin/env bash
 #
-# Simple web server to serve packages via socat.
+# Simple web server to serve packages via socat.  Required options are passed
+# through as environment variables to avoid quoting issues.
 #
 
-# libfetch requires time formats in GMT
-export TZ=GMT
+set -eu
 
-set -eux
-
-dbgfile=
-errfile=
-pkgdir=
-while getopts ":d:e:p:" opt; do
-	case "${opt}" in
-	d)
-		dbgfile=${OPTARG}
-		;;
-	e)
-		errfile=${OPTARG}
-		;;
-	p)
-		pkgdir=${OPTARG}
-		;;
-	esac
-done
-shift $((OPTIND - 1))
-
-if [ ! -d "${pkgdir}" ]; then
-	echo "usage: $0 -p <pkgdir>" >&2
+if [ -z "${REPO_PACKAGES}" ]; then
+	echo "REPO_PACKAGES is a required variable" >&2
 	exit 1
 fi
 
-if [ -n "${errfile}" ]; then
-	exec 2>>${errfile}
+if [ -z "${REPO_HTTPD_TIME}" ]; then
+	echo "REPO_HTTPD_TIME is a required variable" >&2
+	exit 1
 fi
+
+if [ -n "${REPO_HTTPD_ERR}" ]; then
+	exec 2>>${REPO_HTTPD_ERR}
+fi
+
+set -x
 
 ctype_binary="application/octet-stream"
 ctype_html="text/html"
-date_format="%a, %d %b %Y %H:%M:%S %Z"
 
 debuglog()
 {
-	if [ -n "${dbgfile}" ]; then
-		echo "[$$] $@" >>${dbgfile}
+	if [ -n "${REPO_HTTPD_LOG}" ]; then
+		echo "[$$] $@" >>${REPO_HTTPD_LOG}
 	fi
 }
 
@@ -76,7 +62,7 @@ sendhdrs()
 	esac
 
 	printf "Server: pkgin-test-suite/0.1\r\n"
-	printf "Date: $(date "+${date_format}")\r\n"
+	printf "Date: ${REPO_HTTPD_TIME}\r\n"
 
 	# Special handling for certain files to trigger test issues.
 	if [[ "${file}" =~ download-notfound ]]; then
@@ -86,14 +72,12 @@ sendhdrs()
 		if [[ "${file}" =~ download-mismatch ]]; then
 			len=$((len/2))
 		fi
-		# Sorry, crap portability for now :(
-		mtime=$(gdate -r ${file} +"${date_format}")
 		printf "Content-Length: ${len}\r\n"
 		printf "Content-Type: ${ctype_binary}\r\n"
-		printf "Last-Modified: ${mtime}\r\n"
+		printf "Last-Modified: ${REPO_HTTPD_TIME}\r\n"
 		debuglog "             len=${len}"
 		debuglog "             ctype=${ctype_binary}"
-		debuglog "             mtime=${mtime}"
+		debuglog "             mtime=${REPO_HTTPD_TIME}"
 	elif [ -d "${file}" ]; then
 		printf "Content-Type: ${ctype_html}\r\n"
 		debuglog "             ctype=${ctype_html}"
@@ -125,13 +109,19 @@ senddir()
 	local dir="${1%%/}"; shift
 
 	printf "<html>\r\n"
-	printf "<head><title>Index of ${dir##${pkgdir}}/</title></head>\r\n"
-	printf "<body bgcolor=\"white\">\r\n"
-	printf "<h1>Index of ${dir##${pkgdir}}/</h1><hr><pre><a href=\"../\">../</a>\r\n"
+	printf "  <head>\r\n"
+	printf "    <title>Index of ${dir##${REPO_PACKAGES}}/</title>\r\n"
+	printf "  </head>\r\n"
+	printf "  <body bgcolor=\"white\">\r\n"
+	printf "    <h1>Index of ${dir##${REPO_PACKAGES}}/</h1>\r\n"
+	printf "    <hr>\r\n"
+	printf "    <pre>\r\n"
+	printf "      <a href=\"../\">../</a>\r\n"
 	ls -1 ${dir} | while read file; do
-		printf "<a href=\"${file}\">${file}</a>\r\n"
+		printf "      <a href=\"${file}\">${file}</a>\r\n"
 	done
-	printf "</pre><hr></body>\r\n"
+	printf "    </pre>\r\n"
+	printf "  </body>\r\n"
 	printf "</html>\r\n"
 }
 
@@ -160,25 +150,25 @@ response()
 	# Send file request
 	if [ -n "${reqfile}" -a -f "${reqfile}" ]; then
 		if ${headreq}; then
-			debuglog "             HEAD=${reqfile##${pkgdir}}"
+			debuglog "             HEAD=${reqfile##${REPO_PACKAGES}}"
 		else
-			debuglog "             GET=${reqfile##${pkgdir}}"
+			debuglog "             GET=${reqfile##${REPO_PACKAGES}}"
 			sendfile ${reqfile}
 		fi
 	# Send directory listing
 	elif [ -n "${reqfile}" -a -d "${reqfile}" ]; then
 		if ${headreq}; then
-			debuglog "             HEAD=${reqfile##${pkgdir}}"
+			debuglog "             HEAD=${reqfile##${REPO_PACKAGES}}"
 		else
-			debuglog "             GET=${reqfile##${pkgdir}}"
+			debuglog "             GET=${reqfile##${REPO_PACKAGES}}"
 			senddir ${reqfile}
 		fi
 	elif [ -n "${reqfile}" ]; then
-		debuglog "             MISS=${reqfile##${pkgdir}}"
+		debuglog "             MISS=${reqfile##${REPO_PACKAGES}}"
 	fi
 }
 
-debuglog "=> new server for ${pkgdir}"
+debuglog "=> new server for ${REPO_PACKAGES}"
 
 getfile=
 hflag=
@@ -191,10 +181,10 @@ while read r f rest; do
 	# continue, otherwise it's an error (at least for this server).
 	if [ -z "${getfile}" ]; then
 		if [ "$req" = "GET" ]; then
-			getfile="${pkgdir}${file}"
+			getfile="${REPO_PACKAGES}${file}"
 			continue
 		elif [ "$req" = "HEAD" ]; then
-			getfile="${pkgdir}${file}"
+			getfile="${REPO_PACKAGES}${file}"
 			hflag="-h"
 			continue
 		else

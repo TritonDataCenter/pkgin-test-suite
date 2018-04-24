@@ -11,7 +11,7 @@
 pkg_first="keep-1.0"
 pkg_rest="builddate-1.0 pkgpath-1.0 upgrade-1.0 deptree-top-1.0"
 if [ ${PKGIN_VERSION} != "0.9.4" ]; then
-	pkg_rest="${pkg_rest} supersedes-1.0"
+	: pkg_rest="${pkg_rest} supersedes-1.0"
 fi
 pkg_showdeps="deptree-top-1.0"
 pkg_showrdeps="deptree-bottom" # XXX: doesn't support FULLPKGNAME
@@ -194,13 +194,13 @@ pkg_category="pkgpath"
 		compare_output "pkgin.show-rev-deps"
 	done
 }
-# XXX; why is pkgpath not being exported?
+
 @test "${REPO_NAME} verify pkgin export" {
 	# For some reason 0.9.4 says "pkgin: empty local package list."
 	skip094 known fail
 
 	for cmd in export ex; do
-		run pkgin ${cmd}
+		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
 		compare_output "pkgin.export"
 	done

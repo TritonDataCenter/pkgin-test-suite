@@ -26,6 +26,7 @@
 : ${REPO_PACKAGES:=@REPO_PACKAGES@}
 : ${REPO_PKGIN:=@REPO_PKGIN@}
 : ${REPO_PKG_ADD:=@REPO_PKG_ADD@}
+: ${REPO_PKG_DELETE:=@REPO_PKG_DELETE@}
 : ${REPO_PKG_INFO:=@REPO_PKG_INFO@}
 : ${REPO_PKG_PATH:=@REPO_PKG_PATH@}
 : ${REPO_HTTP_PORT:=@REPO_HTTP_PORT@}
@@ -38,6 +39,10 @@
 # Except we need to get the pkgin version to adjust certain test results.
 #
 PKGIN_VERSION=$(${REPO_PKGIN} -v | awk '{print $2}')
+pkgin094()
+{
+	[ ${PKGIN_VERSION} = "0.9.4" ]
+}
 
 #
 # These functions are called at the start and end of each test case.
@@ -46,8 +51,8 @@ setup()
 {
 	set -eu
 	# If pkgin version is before nanotime fixes we need to insert sleeps
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-		sleep 1
+	if pkgin094; then
+		: sleep 1
 	fi
 }
 teardown()
@@ -91,6 +96,10 @@ stop_webserver()
 pkg_add()
 {
 	${REPO_PKG_ADD} "$@"
+}
+pkg_delete()
+{
+	${REPO_PKG_DELETE} "$@"
 }
 pkg_info()
 {
@@ -187,15 +196,26 @@ line_match()
 {
 	lineno=$1; shift
 
-	[ ${#lines[@]} -gt ${lineno} ] || false
+	[ ${#lines[@]} -gt ${lineno} ]
 	[[ ${lines[${lineno}]} =~ $1 ]] || false
+}
+file_match()
+{
+	file=$1; shift
+	nl=0
+	while read match; do
+		line_match ${nl} "${match}"
+		nl=$((nl + 1))
+	done < ${REPO_EXPDIR}/${file}
+	[ ${#lines[@]} -eq ${nl} ]
 }
 
 #
 # Skip tests unsuitable for 0.9.4
+#
 skip094()
 {
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+	if pkgin094; then
 		skip "$@"
 	fi
 }

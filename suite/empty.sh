@@ -5,8 +5,6 @@
 # such as being able to initialise the pkgin database, ensure that the compat
 # checks work, and verify output is as expected when there are no results.
 #
-# It also gives us a default repository to execute the wrapper against.
-#
 
 cat_nonexist="category-does-not-exist"
 pkg_nonexist="pkg-does-not-exist"
