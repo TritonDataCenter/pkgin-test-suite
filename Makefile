@@ -88,10 +88,10 @@ REPO_NAME.http-dl=	http-downloads
 #
 REPO_VARS+=		REPO_PKGLIST
 REPO_PKGLIST.empty=	# no packages by design
-REPO_PKGLIST.install=	keep-1.0 pkgpath-1.0 upgrade-1.0 builddate-1.0
+REPO_PKGLIST.install=	keep-1.0 pkgpath-1.0 upgrade-1.0
 REPO_PKGLIST.install+=	deptree-top-1.0 deptree-middle-1.0 deptree-bottom-1.0
 #REPO_PKGLIST.install+=	supersedes-1.0 supersedes-dep-1.0
-REPO_PKGLIST.upgrade=	keep-1.0 pkgpath-2.0 upgrade-2.0 builddate-1.0
+REPO_PKGLIST.upgrade=	keep-1.0 pkgpath-2.0 upgrade-2.0
 REPO_PKGLIST.upgrade+=	deptree-middle-2.0 deptree-top-2.0 # supersedes-2.0
 REPO_PKGLIST.conflict=	conflict-pkgcfl-1.0 conflict-plist-1.0
 REPO_PKGLIST.conflict+=	provides-1.0 requires-1.0

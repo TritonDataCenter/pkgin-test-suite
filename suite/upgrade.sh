@@ -12,12 +12,13 @@
 }
 
 #
-# The builddate package installed from the previous repository should not
-# match the BUILD_DATE of the current repository.  We later then test that
-# it does, proving that it was correctly refreshed.
+# The keep package installed from the previous repository should not
+# match the BUILD_DATE of the current repository, and the version should not
+# change during the following upgrades, making it a good candidate to ensure
+# that refresh works.
 #
-@test "${REPO_NAME} ensure builddate BUILD_DATE is not current" {
-	run pkg_info -Q BUILD_DATE builddate
+@test "${REPO_NAME} ensure BUILD_DATE is not current" {
+	run pkg_info -Q BUILD_DATE keep-1.0
 	[ ${status} -eq 0 ]
 	[ -n "${output}" ]
 	[ "${output}" != "${REPO_BUILD_DATE}" ]
@@ -60,11 +61,11 @@
 }
 
 #
-# Now verify that the builddate package has been refreshed with the current
+# Now verify that the keep package has been refreshed with the current
 # repository BUILD_DATE
 #
-@test "${REPO_NAME} verify builddate BUILD_DATE" {
-	run pkg_info -Q BUILD_DATE builddate
+@test "${REPO_NAME} verify BUILD_DATE refresh" {
+	run pkg_info -Q BUILD_DATE keep-1.0
 	[ ${status} -eq 0 ]
 	[ -n "${output}" ]
 	[ "${output}" = "${REPO_BUILD_DATE}" ]

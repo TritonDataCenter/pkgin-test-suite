@@ -9,7 +9,7 @@
 
 # deptree-top automatically pulls in deptree-* dependencies.
 pkg_first="keep-1.0"
-pkg_rest="builddate-1.0 pkgpath-1.0 upgrade-1.0 deptree-top-1.0"
+pkg_rest="pkgpath-1.0 upgrade-1.0 deptree-top-1.0"
 if [ ${PKGIN_VERSION} != "0.9.4" ]; then
 	: pkg_rest="${pkg_rest} supersedes-1.0"
 fi
@@ -269,8 +269,9 @@ pkg_category="pkgpath"
 		compare_output "cat-share-doc-all.out"
 	fi
 }
-@test "${REPO_NAME} verify builddate BUILD_DATE" {
-	run pkg_info -Q BUILD_DATE builddate
+@test "${REPO_NAME} verify BUILD_DATE" {
+	run pkg_info -Q BUILD_DATE keep-1.0
 	[ ${status} -eq 0 ]
+	[ -n "${output}" ]
 	[ "${output}" = "${REPO_BUILD_DATE}" ]
 }
