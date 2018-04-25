@@ -20,14 +20,9 @@ category="testsuite"
 pkg_category="pkgpath"
 
 #
-# Test a fresh install against no existing databases.
+# Ensure a clean work area to start with.
 #
-# TEST_PKGIN_DBDIR needs to exist as pkgin does not create parent directories.
-#
-@test "${REPO_NAME} test first install against empty installation" {
-	# pkgin 0.9.4 does not work correctly against an empty install
-	skip094 known fail
-
+@test "${REPO_NAME} ensure clean work directory" {
 	run rm -rf ${TEST_LOCALBASE} ${TEST_VARBASE}
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
@@ -35,52 +30,54 @@ pkg_category="pkgpath"
 	run mkdir -p ${TEST_PKGIN_DBDIR}
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
-
-	run pkgin -y install ${pkg_first}
-	[ ${status} -eq 0 ]
-	output_match "processing local summary"
-	output_match "processing remote summary"
-	#XXX plural
-	output_match "1 packages to be installed"
-	output_match "installing.*${pkg_first}"
-	output_match "pkg_install warnings: 0, errors: 0"
-
-	compare_pkg_info "pkg_info.start"
 }
 
 #
-# Now do the same but against an installation which has already had some
-# packages installed using pkg_add.  This should correctly initialise the
-# existing packages.
+# Start with an existing pkg_add installation, to ensure we correctly pick up
+# existing local packages and do not try to perform the install.
 #
-@test "${REPO_NAME} test first install against existing pkg_add installation" {
-	run rm -rf ${TEST_LOCALBASE} ${TEST_VARBASE}
-	[ ${status} -eq 0 ]
-	[ -z "${output}" ]
-
+@test "${REPO_NAME} install first package using pkg_add" {
 	run pkg_add ${pkg_first}
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
-
+}
+@test "${REPO_NAME} verify first package with pkg_info" {
 	compare_pkg_info "pkg_info.start"
+}
+@test "${REPO_NAME} test pkgin install against existing installation" {
+	run pkgin -y install ${pkg_first}
+	[ ${status} -eq 0 ]
+	file_match "install-against-existing.regex"
+}
+@test "${REPO_NAME} verify TEST_PKG_INSTALL_LOG is missing" {
+	run [ ! -f ${TEST_PKG_INSTALL_LOG} ]
+	[ ${status} -eq 0 ]
+}
+@test "${REPO_NAME} verify pkgin list against existing installation" {
+	compare_pkgin_list "pkgin-list.start"
+}
+
+#
+# Now do the same but against an empty installation.  It is important that this
+# test comes after the previous one, as we rely on the cache directory having
+# some packages in it to test upgrades work correctly (e.g. mismatches).
+#
+@test "${REPO_NAME} create empty installation" {
+	run rm -rf ${TEST_LOCALBASE} ${TEST_VARBASE}
+	[ ${status} -eq 0 ]
+	[ -z "${output}" ]
 
 	run mkdir -p ${TEST_PKGIN_DBDIR}
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
-
+}
+@test "${REPO_NAME} test pkgin install against empty installation" {
 	run pkgin -y install ${pkg_first}
 	[ ${status} -eq 0 ]
-	output_match "processing local summary"
-	if [ ${PKGIN_VERSION} != "0.9.4" ]; then
-		output_match "processing remote summary"
-	fi
-	output_match "nothing to do"
-
-	compare_pkgin_list "pkgin-list.start"
+	file_match "install-against-empty.regex"
 }
-@test "${REPO_NAME} test TEST_PKG_INSTALL_LOG is missing" {
-	run [ ! -f ${TEST_PKG_INSTALL_LOG} ]
-	[ ${status} -eq 0 ]
+@test "${REPO_NAME} verify pkgin list against empty installation" {
+	compare_pkgin_list "pkgin-list.start"
 }
 
 #
@@ -119,19 +116,6 @@ pkg_category="pkgpath"
 # Now that we have some packages installed we can re-run basic commands
 # that will now have output.
 #
-@test "${REPO_NAME} verify pkgin clean" {
-	run ls ${TEST_PKGIN_CACHE}
-	[ ${status} -eq 0 ]
-	[ -n "${output}" ]
-
-	run pkgin clean
-	[ ${status} -eq 0 ]
-	[ -z "${output}" ]
-
-	run ls ${TEST_PKGIN_CACHE}
-	[ ${status} -eq 0 ]
-	[ -z "${output}" ]
-}
 @test "${REPO_NAME} verify pkgin search" {
 	for cmd in search se; do
 		run pkgin ${cmd} keep

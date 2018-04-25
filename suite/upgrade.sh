@@ -17,11 +17,19 @@
 # change during the following upgrades, making it a good candidate to ensure
 # that refresh works.
 #
+# We also need to verify that it is currently in the cache directory, to test
+# that we can detect the download needs to be performed even if the sizes
+# happen to match.
+#
 @test "${REPO_NAME} ensure BUILD_DATE is not current" {
 	run pkg_info -Q BUILD_DATE keep-1.0
 	[ ${status} -eq 0 ]
 	[ -n "${output}" ]
 	[ "${output}" != "${REPO_BUILD_DATE}" ]
+}
+@test "${REPO_NAME} ensure BUILD_DATE package exists in the cache" {
+	run [ -f ${TEST_PKGIN_CACHE}/keep-1.0.tgz ]
+	[ ${status} -eq 0 ]
 }
 
 #
@@ -40,6 +48,7 @@
 	run pkgin -dy fug
 	file_match "full-upgrade-download-only.regex"
 }
+
 @test "${REPO_NAME} test pkgin full-upgrade (output only after download)" {
 	run pkgin -n fug
 	[ ${status} -eq 0 ]
