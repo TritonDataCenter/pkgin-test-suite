@@ -1,5 +1,5 @@
 calculating dependencies...done.
-4 packages to be downloaded .52K to download.:
+4 packages to be downloaded .[0-9]+[BK] to download.:
 upgrade-2.0 keep-1.0 deptree-top-2.0 deptree-middle-2.0
 downloading upgrade-2.0.tgz done.
 downloading keep-1.0.tgz done.
