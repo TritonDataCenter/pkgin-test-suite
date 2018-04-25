@@ -130,7 +130,7 @@ pkg_category="pkgpath"
 		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
 			compare_output "pkgin-0.9.4.stats"
 		else
-			compare_output "pkgin.stats"
+			file_match "pkgin-stats.regex"
 		fi
 	done
 }
