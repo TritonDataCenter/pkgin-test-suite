@@ -33,7 +33,8 @@ TEST_WORKDIR?=		${.CURDIR}/.work
 TEST_BUILDINFO?=	${TEST_WORKDIR}/build-info.default
 TEST_LOCALBASE?=	${TEST_WORKDIR}/local
 TEST_VARBASE?=		${TEST_WORKDIR}/var
-TEST_PKG_DBDIR?=	${TEST_VARBASE}/db/pkg
+# XXX: must not be substring of PKGIN_DBDIR to avoid pkg_info PKG_DBDIR bugs
+TEST_PKG_DBDIR?=	${TEST_VARBASE}/db/pkgdb
 TEST_PKGIN_DBDIR?=	${TEST_VARBASE}/db/pkgin
 TEST_PKGIN_DB?=		${TEST_PKGIN_DBDIR}/pkgin.db
 TEST_PKGIN_CACHE?=	${TEST_PKGIN_DBDIR}/cache
