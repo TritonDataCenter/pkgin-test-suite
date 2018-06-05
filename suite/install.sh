@@ -195,8 +195,9 @@ pkg_category="pkgpath"
 		[ ${status} -eq 0 ]
 		# Output changes depending on test directory
 		line_match 0 "Information for .*${pkg_first}"
-		line_match 1 "Files"
-		line_match 2 "share.doc.keep"
+		line_match 1 "PACKAGE MAY NOT BE DELETED"
+		line_match 2 "Files"
+		line_match 3 "share.doc.keep"
 	done
 }
 @test "${REPO_NAME} verify pkgin show-category" {

@@ -164,6 +164,11 @@ PKG_SUMFILTER.badsizepkg-1.0=	sed -e '/^SIZE_PKG/s/=.*/=123456789123456789/'
 PKG_VARS+=			PKG_PKGPATH
 PKG_PKGPATH.pkgpath-1.0=	testsuite/pkgpath1
 PKG_PKGPATH.pkgpath-2.0=	testsuite/pkgpath2
+#
+#	Mark package as PRESERVE, i.e. should not be deleted.
+#
+PKG_VARS+=			PKG_PRESERVE
+PKG_PRESERVE.keep-1.0=		# defined
 
 
 #
@@ -388,6 +393,7 @@ ${PKGFILE.${repo}.${pkg}}: ${REPOPKG_PLIST.${repo}.${pkg}}
 	    -F ${PKG_COMPRESSION.${pkg}:U${PKG_COMPRESSION}} \
 	    -f ${REPOPKG_PLIST.${repo}.${pkg}} \
 	    -I ${TEST_LOCALBASE} \
+	    ${PKG_PRESERVE.${pkg}:D -n ${PKG_COMMENT.${repo}.${pkg}}} \
 	    -p ${REPOPKG_FILES.${repo}.${pkg}} \
 	    -s ${PKGREPO_SIZEPKG.${repo}.${pkg}} \
 	    ${.TARGET:Q}; then \
