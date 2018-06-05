@@ -96,7 +96,7 @@ REPO_PKGLIST.upgrade=	keep-1.0 pkgpath-2.0 upgrade-2.0
 REPO_PKGLIST.upgrade+=	deptree-middle-2.0 deptree-top-2.0 # supersedes-2.0
 REPO_PKGLIST.conflict=	conflict-pkgcfl-1.0 conflict-plist-1.0
 REPO_PKGLIST.conflict+=	provides-1.0 requires-1.0
-REPO_PKGLIST.invalid=	badfilesize-1.0 badsizepkg-1.0
+REPO_PKGLIST.invalid=	badfilesize-1.0 badsizepkg-1.0 badsum-1.0
 REPO_PKGLIST.file-dl=	keep-1.0 download-ok-1.0 download-notfound-1.0
 REPO_PKGLIST.file-dl+=	download-truncate-1.0 download-mismatch-1.0
 REPO_PKGLIST.http-dl=	keep-1.0 download-ok-1.0 download-notfound-1.0
@@ -157,6 +157,7 @@ PKG_VARS+=			PKG_SUMFILTER
 PKG_SUMFILTER=			cat
 PKG_SUMFILTER.badfilesize-1.0=	sed -e '/^FILE_SIZE/s/=.*/=987654321987654321/'
 PKG_SUMFILTER.badsizepkg-1.0=	sed -e '/^SIZE_PKG/s/=.*/=123456789123456789/'
+PKG_SUMFILTER.badsum-1.0=	sed -e '/^BUILD_DATE/d'
 #
 #	PKG_PKGPATH sets PKGPATH for the specified package, otherwise a default
 #	of "testsuite/<pkg>" is used.

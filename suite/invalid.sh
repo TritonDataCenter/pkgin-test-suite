@@ -4,6 +4,7 @@
 
 pkg_filesize="badfilesize-1.0"
 pkg_sizepkg="badsizepkg-1.0"
+pkg_badsum="badsum-1.0"
 
 @test "${REPO_NAME} test massive FILE_SIZE" {
 	run pkgin -y install ${pkg_filesize}
@@ -15,6 +16,16 @@ pkg_sizepkg="badsizepkg-1.0"
 	[ ${status} -eq 1 ]
 	output_match "does not have enough space for installation"
 }
+
+#
+# This package should install correctly, the missing/invalid entries are
+# designed to trigger e.g. bad strcpy/strdup of NULL values.
+#
+@test "${REPO_NAME} test package with missing or invalid pkg_summary entries" {
+	run pkgin -y install ${pkg_badsum}
+	[ ${status} -eq 0 ]
+}
+
 @test "${REPO_NAME} test pkgin stats with large values" {
 	run pkgin stats
 	[ ${status} -eq 0 ]
