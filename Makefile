@@ -141,6 +141,39 @@ REPO_SUBST.http-dl+=	-e 's,@PKG_MISMATCH@,download-mismatch-1.0,g'
 #
 # Per-package variables and their defaults.
 #
+#	PKG_COMMENT sets the COMMENT field for a package.
+#
+PKG_VARS+=			PKG_COMMENT
+PKG_COMMENT.badfilesize-1.0=	"Package has a FILE_SIZE larger than available"
+PKG_COMMENT.badsizepkg-1.0=	"Package has a SIZE_PKG larger than available"
+PKG_COMMENT.badsum-1.0=		"Package has missing or invalid pkg_summary entries"
+PKG_COMMENT.conflict-pkgcfl-1.0=\
+				"Package should conflict with keep-1.0 (@pkgcfl conflict)"
+PKG_COMMENT.conflict-plist-1.0=	\
+				"Package should conflict with keep-1.0 (PLIST conflict)"
+PKG_COMMENT.deptree-bottom-1.0=	"Package is at the bottom of a dependency tree"
+PKG_COMMENT.deptree-middle-1.0=	"Package is in the middle of a dependency tree"
+PKG_COMMENT.deptree-middle-2.0=	"Package is in the middle of a dependency tree"
+PKG_COMMENT.deptree-top-1.0=	"Package is at the top of a dependency tree"
+PKG_COMMENT.deptree-top-2.0=	"Package is at the top of a dependency tree"
+PKG_COMMENT.download-mismatch-1.0=\
+				"Package tests download failure (mismatch with pkg_summary)"
+PKG_COMMENT.download-notfound-1.0=\
+				"Package tests download failure (404 Not Found)"
+PKG_COMMENT.download-ok-1.0=	"Package tests download success"
+PKG_COMMENT.download-truncate-1.0=	\
+				"Package tests incorrect pkgin cache"
+PKG_COMMENT.keep-1.0=		"Package should remain at all times"
+PKG_COMMENT.pkgpath-1.0=	"Package should not be upgraded by newer pkgpath"
+PKG_COMMENT.pkgpath-2.0=	"Package should not be upgraded by newer pkgpath"
+PKG_COMMENT.provides-1.0=	"Package provides libprovides.so"
+PKG_COMMENT.requires-1.0=	"Package requires libprovides.so"
+PKG_COMMENT.supersedes-1.0=	"Package will be superseded by 2.0"
+PKG_COMMENT.supersedes-2.0=	"Package supersedes both supersedes-1.0 and supersedes-dep-1.0"
+PKG_COMMENT.supersedes-dep-1.0=	"Dependency of supersedes-1.0, conflicts with supersedes-2.0"
+PKG_COMMENT.upgrade-1.0=	"Package should be upgraded to newer upgrade"
+PKG_COMMENT.upgrade-2.0=	"Package should be upgraded over older upgrade package"
+#
 #	PKG_COMPRESSION sets the compression type for a package.  Default is
 #	"none" as packages may be dependent upon FILE_SIZE which can differ
 #	depending on various things.
@@ -308,8 +341,6 @@ REPO_SUBST.${repo}+=		-e 's,@${var}@,${${var}.${repo}:Q},g'
 .  for pkg in ${REPO_PKGLIST.${repo}}
 PKG_PKGDIR.${repo}.${pkg}=	${TEST_PACKAGEDIR}/${pkg}
 PKG_BUILDINFO.${repo}.${pkg}=	${PKG_PKGDIR.${repo}.${pkg}}/BUILD_INFO
-PKG_COMMENT.${repo}.${pkg}=	${PKG_PKGDIR.${repo}.${pkg}}/COMMENT
-PKG_DESCR.${repo}.${pkg}=	${PKG_COMMENT.${repo}.${pkg}}
 PKG_FILES.${repo}.${pkg}=	${PKG_PKGDIR.${repo}.${pkg}}/files
 PKG_PLIST.${repo}.${pkg}=	${PKG_PKGDIR.${repo}.${pkg}}/PLIST
 PKGFILE.${repo}.${pkg}=		${REPO_PACKAGES.${repo}}/${pkg}.tgz
@@ -338,6 +369,13 @@ ${REPOPKG_BUILDINFO.${repo}.${pkg}}: ${TEST_BUILDINFO}
 		${PKG_SUBST.${repo}${pkg}} ${PKG_BUILDINFO.${repo}.${pkg}} \
 		>>${.TARGET:Q}
 .    endif
+#
+#  - Generate COMMENT.  This triples up as the DESCR and PKG_PRESERVE file.
+#
+REPOPKG_COMMENT.${repo}.${pkg}:=	${REPO_WRKDIR.${repo}}/comment/${pkg}
+${REPOPKG_COMMENT.${repo}.${pkg}}:
+	@mkdir -p ${.TARGET:H:Q}
+	@echo ${PKG_COMMENT.${pkg}} >>${.TARGET:Q}
 #
 #  - Generate files.
 #
@@ -382,19 +420,19 @@ ${PKGREPO_SIZEPKG.${repo}.${pkg}}: ${REPOPKG_PLIST.${repo}.${pkg}}
 ${PKGFILE.${repo}.${pkg}}: ${REPOPKG_BUILDINFO.${repo}.${pkg}}
 ${PKGFILE.${repo}.${pkg}}: ${PKGREPO_SIZEPKG.${repo}.${pkg}}
 ${PKGFILE.${repo}.${pkg}}: ${PKGREPO_FILES.${repo}.${pkg}}
-${PKGFILE.${repo}.${pkg}}: ${PKG_COMMENT.${repo}.${pkg}} ${PKG_DESCR.${repo}.${pkg}}
+${PKGFILE.${repo}.${pkg}}: ${REPOPKG_COMMENT.${repo}.${pkg}}
 ${PKGFILE.${repo}.${pkg}}: ${REPOPKG_PLIST.${repo}.${pkg}}
 	@echo '=> Generating ${.TARGET:Q}'
 	@mkdir -p ${.TARGET:H:Q}
 	# pkg_create can fail and leave files around.
 	@if ! ${SYSTEM_PKG_CREATE} \
 	    -B ${REPOPKG_BUILDINFO.${repo}.${pkg}} \
-	    -c ${PKG_COMMENT.${repo}.${pkg}} \
-	    -d ${PKG_DESCR.${repo}.${pkg}} \
+	    -c ${REPOPKG_COMMENT.${repo}.${pkg}} \
+	    -d ${REPOPKG_COMMENT.${repo}.${pkg}} \
 	    -F ${PKG_COMPRESSION.${pkg}:U${PKG_COMPRESSION}} \
 	    -f ${REPOPKG_PLIST.${repo}.${pkg}} \
 	    -I ${TEST_LOCALBASE} \
-	    ${PKG_PRESERVE.${pkg}:D -n ${PKG_COMMENT.${repo}.${pkg}}} \
+	    ${PKG_PRESERVE.${pkg}:D -n ${REPOPKG_COMMENT.${repo}.${pkg}}} \
 	    -p ${REPOPKG_FILES.${repo}.${pkg}} \
 	    -s ${PKGREPO_SIZEPKG.${repo}.${pkg}} \
 	    ${.TARGET:Q}; then \
