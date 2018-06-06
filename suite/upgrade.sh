@@ -34,7 +34,7 @@
 
 #
 # Test all parts of a full-upgrade, including no-op output, download only, and
-# an actual install.
+# an actual install.  Sprinkle some -f to ensure forced updates are correct.
 #
 @test "${REPO_NAME} test pkgin full-upgrade (output only)" {
 	run pkgin -n fug
@@ -45,12 +45,12 @@
 	# pkgin 0.9.4 doesn't download only!
 	skip094 known fail
 
-	run pkgin -dy fug
+	run pkgin -dfy fug
 	file_match "full-upgrade-download-only.regex"
 }
 
 @test "${REPO_NAME} test pkgin full-upgrade (output only after download)" {
-	run pkgin -n fug
+	run pkgin -fn fug
 	[ ${status} -eq 0 ]
 	file_match "full-upgrade-output-only-2.regex"
 }

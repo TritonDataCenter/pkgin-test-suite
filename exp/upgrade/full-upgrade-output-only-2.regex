@@ -1,3 +1,5 @@
+processing remote summary .http://.*
+downloading pkg_summary.* done.
 calculating dependencies...done.
 4 packages to be upgraded:
 upgrade-1.0
