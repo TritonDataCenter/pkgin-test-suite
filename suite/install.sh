@@ -81,17 +81,13 @@ pkg_category="pkgpath"
 }
 
 #
-# Install subsequent packages.
+# Install subsequent packages.  This uses -f to test that a force refresh
+# of the remote database is performed correctly.
 #
 @test "${REPO_NAME} install remaining packages" {
-	run pkgin -y install ${pkg_rest}
+	run pkgin -fy install ${pkg_rest}
 	[ ${status} -eq 0 ]
-	output_match "packages to be installed"
-	output_match "pkg_install warnings: 0, errors: 0"
-	for pkg in ${pkg_rest}; do
-		output_match "installing ${pkg}"
-		output_match "marking ${pkg} as non auto-removable"
-	done
+	file_match "install-remaining.regex"
 }
 # Should only contain "installing .." lines.
 @test "${REPO_NAME} verify TEST_PKG_INSTALL_LOG contents" {
@@ -106,6 +102,12 @@ pkg_category="pkgpath"
 	run pkgin -y install ${pkg_first}
 	[ ${status} -eq 0 ]
 	line_match 1 "nothing to do"
+
+	# Verify a force install refreshes the remote summary
+	run pkgin -fy install ${pkg_first}
+	[ ${status} -eq 0 ]
+	line_match 0 "processing remote summary"
+	line_match 3 "nothing to do"
 
 	run pkg_add ${pkg_first}
 	[ ${status} -eq 0 ]
