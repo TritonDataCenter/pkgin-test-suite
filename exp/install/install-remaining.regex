@@ -1,7 +1,6 @@
 processing remote summary .http://.*
 downloading pkg_summary.* done.
 calculating dependencies...done.
-nothing to upgrade.
 5 packages to be installed .[0-9]+[BK] to download, 78B to install.:
 deptree-bottom-1.0 deptree-middle-1.0 pkgpath-1.0 upgrade-1.0 deptree-top-1.0
 downloading deptree-bottom-1.0.tgz done.
@@ -9,7 +8,6 @@ downloading deptree-middle-1.0.tgz done.
 downloading pkgpath-1.0.tgz done.
 downloading upgrade-1.0.tgz done.
 downloading deptree-top-1.0.tgz done.
-installing packages...
 installing deptree-bottom-1.0...
 installing deptree-middle-1.0...
 installing pkgpath-1.0...
