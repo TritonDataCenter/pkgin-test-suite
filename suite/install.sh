@@ -87,7 +87,8 @@ pkg_category="pkgpath"
 @test "${REPO_NAME} install remaining packages" {
 	run pkgin -fy install ${pkg_rest}
 	[ ${status} -eq 0 ]
-	file_match "install-remaining.regex"
+	# The output order here is nondeterministic.
+	file_match -I "install-remaining.regex"
 }
 # Should only contain "installing .." lines.
 @test "${REPO_NAME} verify TEST_PKG_INSTALL_LOG contents" {

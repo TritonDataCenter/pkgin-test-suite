@@ -199,12 +199,31 @@ line_match()
 	[ ${#lines[@]} -gt ${lineno} ]
 	[[ ${lines[${lineno}]} =~ $1 ]] || false
 }
+#
+# Match output against a file containing regular expressions.  By default a
+# strict order is checked, as well as an exact match in the number of lines
+# in the output.  Sometimes the output order is non-deterministic, in which
+# case the "-I" option will ignore the ordering, but will still require the
+# number of lines to match.
+#
 file_match()
 {
-	file=$1; shift
+	order=true
 	nl=0
+
+	if [ "$1" = "-I" ]; then
+		order=false
+		shift
+	fi
+
+	file=$1; shift
+
 	while read match; do
-		line_match ${nl} "${match}"
+		if $order; then
+			line_match ${nl} "${match}"
+		else
+			output_match "${match}"
+		fi
 		nl=$((nl + 1))
 	done < ${REPO_EXPDIR}/${file}
 	[ ${#lines[@]} -eq ${nl} ]

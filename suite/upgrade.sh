@@ -45,8 +45,9 @@
 	# pkgin 0.9.4 doesn't download only!
 	skip094 known fail
 
+	# The output order here is non-deterministic.
 	run pkgin -dfy fug
-	file_match "full-upgrade-download-only.regex"
+	file_match -I "full-upgrade-download-only.regex"
 }
 
 @test "${REPO_NAME} test pkgin full-upgrade (output only after download)" {
