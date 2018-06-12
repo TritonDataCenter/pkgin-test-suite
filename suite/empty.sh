@@ -37,7 +37,7 @@ pkg_nonexist="pkg-does-not-exist"
 @test "${REPO_NAME} test initial pkgin update" {
 	run pkgin update
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "downloading pkg_summary"
 	else
 		line_match 0 "processing remote summary"
@@ -56,7 +56,7 @@ pkg_nonexist="pkg-does-not-exist"
 @test "${REPO_NAME} test subsequent pkgin update" {
 	run pkgin up
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "downloading pkg_summary"
 	else
 		line_match 0 "processing remote summary"
@@ -96,7 +96,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in search se; do
 		run pkgin ${cmd} ${pkg_nonexist}
 		# 0.9.4 is broken here
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			[ ${status} -eq 0 ]
 		else
 			[ ${status} -eq 1 ]
@@ -122,7 +122,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in install in; do
 		run pkgin ${cmd} ${pkg_nonexist}
 		[ ${status} -eq 1 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "empty available packages list"
 		else
 			line_match 0 "empty available packages list"
@@ -134,7 +134,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in remove rm; do
 		run pkgin ${cmd} ${pkg_nonexist}
 		[ ${status} -eq 1 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "pkgin: empty local package list."
 		else
 			[ "${output}" = "pkgin: empty local package list." ]
@@ -145,14 +145,15 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in autoremove ar; do
 		run pkgin ${cmd}
 		[ ${status} -eq 1 ]
-		output_match "no packages have been marked as keepable"
+		# installed with pkgin (0.9) | marked as keepable (0.10+)
+		output_match "no packages have been installed|marked"
 	done
 }
 @test "${REPO_NAME} test pkgin show-keep" {
 	for cmd in show-keep sk; do
 		run pkgin ${cmd}
 		[ ${status} -eq 0 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "empty non-autoremovable package list"
 		else
 			[ "${output}" = "empty non-autoremovable package list" ]
@@ -163,7 +164,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in show-no-keep snk; do
 		run pkgin ${cmd}
 		[ ${status} -eq 0 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "empty autoremovable package list"
 		else
 			[ "${output}" = "empty autoremovable package list" ]
@@ -174,7 +175,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in export ex; do
 		run pkgin ${cmd}
 		[ ${status} -eq 1 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "pkgin: empty local package list."
 		else
 			[ "${output}" = "pkgin: empty local package list." ]
@@ -191,7 +192,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in show-pkg-category spc; do
 		run pkgin ${cmd} ${pkg_nonexist}
 		# 0.9.4 is broken here
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			[ ${status} -eq 0 ]
 		else
 			[ ${status} -eq 1 ]
@@ -202,7 +203,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in show-all-categories sac; do
 		run pkgin ${cmd}
 		[ ${status} -eq 0 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "No categories found."
 		else
 			[ "${output}" = "No categories found." ]
@@ -213,7 +214,7 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in pkg-content pc pkg-descr pd pkg-build-defs pbd; do
 		run pkgin ${cmd}
 		[ ${status} -eq 1 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "pkgin: missing package name"
 		else
 			[ "${output}" = "pkgin: missing package name" ]
@@ -232,14 +233,14 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in clean cl; do
 		run pkgin ${cmd}
 		[ ${status} -eq 0 ]
-		if [ ${PKGIN_VERSION} != "0.9.4" ]; then
+		if [ ${PKGIN_VERSION} -ge 001000 ]; then
 			[ -z "${output}" ]
 		fi
 	done
 }
 @test "${REPO_NAME} test pkgin stats" {
 	# Known issue with "NULL source" mixed into the output
-	skip094 known fail
+	skip_if_version -lt 001000 "known fail"
 
 	for cmd in stats st; do
 		run pkgin ${cmd}
@@ -247,23 +248,24 @@ pkg_nonexist="pkg-does-not-exist"
 		compare_output "pkgin.stats"
 	done
 }
-@test "${REPO_NAME} test pkgin usage" {
+@test "${REPO_NAME} test pkgin usage (invalid command)" {
 	# Invalid command
 	run pkgin ojnk
 	[ ${status} -eq 1 ]
 	compare_output "pkgin.usage"
-
-	# Test running with no commands for argc/argv usage
+}
+@test "${REPO_NAME} test pkgin usage (no command)" {
 	run pkgin
 	[ ${status} -eq 1 ]
 	compare_output "pkgin.usage"
-
-	# Explicitly asking for help should return success
+}
+@test "${REPO_NAME} test pkgin -h" {
+	# 0.9 exits failure and changes the output slightly, just skip.
+	skip_if_version -lt 001000
 	run pkgin -h
 	[ ${status} -eq 0 ]
 	compare_output "pkgin.usage"
 }
-
 @test "${REPO_NAME} test pkgin -v" {
 	run pkgin -v
 	[ ${status} -eq 0 ]

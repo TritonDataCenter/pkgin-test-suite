@@ -12,6 +12,15 @@ pkg_requires="requires"
 pkg_provides="provides"
 
 #
+# Explicit update for 0.9.x. repository refresh
+#
+@test "${REPO_NAME} perform pkgin update" {
+	skip_if_version -ge 001000 "Not required for 0.10+"
+	run pkgin -fy update
+	[ ${status} -eq 0 ]
+}
+
+#
 # Test @pkgcfl conflicts.
 #
 @test "${REPO_NAME} attempt to install @pkgcfl conflict package" {
@@ -49,8 +58,7 @@ pkg_provides="provides"
 # the pkgin parser to ensure they are correctly registered.
 #
 @test "${REPO_NAME} verify LOCAL_CONFLICTS table" {
-	skip094 known fail
-	skip not currently working
+	skip "not currently working"
 
 	run pkgdbsql "SELECT DISTINCT LOCAL_CONFLICTS_PKGNAME FROM LOCAL_CONFLICTS;"
 	[ ${status} -eq 0 ]

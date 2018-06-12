@@ -76,6 +76,11 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 	run pkg_delete ${PKG_OK}
 	[ ${status} -eq 0 ]
 
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		run pkgin -fy update
+		[ ${status} -eq 0 ]
+	fi
+
 	run pkgin -y install ${PKG_OK}
 	[ ${status} -eq 0 ]
 	file_match "download-install.regex"

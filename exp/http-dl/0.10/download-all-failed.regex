@@ -1,0 +1,9 @@
+download error: .*download-notfound-1.0.tgz Not Found
+download error: .*download-truncate-1.0.tgz truncated
+download error: download-mismatch-1.0 size does not match pkg_summary
+calculating dependencies...done
+nothing to upgrade
+3 packages to be installed .[0-9]+[BK] to download, 66B to install.:
+download-notfound-1.0 download-truncate-1.0 download-mismatch-1.0
+downloading download-truncate-1.0.tgz done.
+downloading download-mismatch-1.0.tgz done.

@@ -10,7 +10,7 @@
 # deptree-top automatically pulls in deptree-* dependencies.
 pkg_first="keep-1.0"
 pkg_rest="pkgpath-1.0 upgrade-1.0 deptree-top-1.0"
-if [ ${PKGIN_VERSION} != "0.9.4" ]; then
+if [ ${PKGIN_VERSION} -ge 001000 ]; then
 	: pkg_rest="${pkg_rest} supersedes-1.0"
 fi
 pkg_showdeps="deptree-top-1.0"
@@ -36,6 +36,8 @@ pkg_category="pkgpath"
 # Start with an existing pkg_add installation, to ensure we correctly pick up
 # existing local packages and do not try to perform the install.
 #
+# This doesn't work correctly pre-0.10 so just skip for 0.9.
+#
 @test "${REPO_NAME} install first package using pkg_add" {
 	run pkg_add ${pkg_first}
 	[ ${status} -eq 0 ]
@@ -45,6 +47,7 @@ pkg_category="pkgpath"
 	compare_pkg_info "pkg_info.start"
 }
 @test "${REPO_NAME} test pkgin install against existing installation" {
+	skip_if_version -lt 001000
 	run pkgin -y install ${pkg_first}
 	[ ${status} -eq 0 ]
 	file_match "install-against-existing.regex"
@@ -54,6 +57,7 @@ pkg_category="pkgpath"
 	[ ${status} -eq 0 ]
 }
 @test "${REPO_NAME} verify pkgin list against existing installation" {
+	skip_if_version -lt 001000
 	compare_pkgin_list "pkgin-list.start"
 }
 
@@ -72,6 +76,16 @@ pkg_category="pkgpath"
 	[ -z "${output}" ]
 }
 @test "${REPO_NAME} test pkgin install against empty installation" {
+	# Pre-0.10 doesn't work against an empty installation, so we need to
+	# give it a helping hand.
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		run pkg_add ${pkg_first}
+		[ ${status} -eq 0 ]
+		[ -z "${output}" ]
+
+		run pkgin -fy up
+		[ ${status} -eq 0 ]
+	fi
 	run pkgin -y install ${pkg_first}
 	[ ${status} -eq 0 ]
 	file_match "install-against-empty.regex"
@@ -102,13 +116,16 @@ pkg_category="pkgpath"
 @test "${REPO_NAME} attempt to install already-installed package" {
 	run pkgin -y install ${pkg_first}
 	[ ${status} -eq 0 ]
-	line_match 1 "nothing to do"
+	output_match "nothing to do"
 
-	# Verify a force install refreshes the remote summary
+	# Verify a force install refreshes the remote summary, except it
+	# doesn't pre-0.10
 	run pkgin -fy install ${pkg_first}
 	[ ${status} -eq 0 ]
-	line_match 0 "processing remote summary"
-	line_match 3 "nothing to do"
+	if [ ${PKGIN_VERSION} -ge 001000 ]; then
+		output_match "processing remote summary"
+	fi
+	output_match "nothing to do"
 
 	run pkg_add ${pkg_first}
 	[ ${status} -eq 0 ]
@@ -130,33 +147,21 @@ pkg_category="pkgpath"
 	for cmd in stats st; do
 		run pkgin stats
 		[ ${status} -eq 0 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-			compare_output "pkgin-0.9.4.stats"
-		else
-			file_match "pkgin-stats.regex"
-		fi
+		file_match "pkgin-stats.regex"
 	done
 }
 @test "${REPO_NAME} verify pkgin show-keep" {
 	for cmd in show-keep sk; do
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-			compare_output "pkgin-0.9.4.show-keep"
-		else
-			compare_output "pkgin.show-keep"
-		fi
+		compare_output "pkgin.show-keep"
 	done
 }
 @test "${REPO_NAME} verify pkgin show-no-keep" {
 	for cmd in show-no-keep snk; do
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
-		if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-			compare_output "pkgin-0.9.4.show-no-keep"
-		else
-			compare_output "pkgin.show-no-keep"
-		fi
+		compare_output "pkgin.show-no-keep"
 	done
 }
 @test "${REPO_NAME} verify pkgin show-deps" {
@@ -184,7 +189,7 @@ pkg_category="pkgpath"
 
 @test "${REPO_NAME} verify pkgin export" {
 	# For some reason 0.9.4 says "pkgin: empty local package list."
-	skip094 known fail
+	skip_if_version -lt 001000 "known fail"
 
 	for cmd in export ex; do
 		run pkgin_sorted ${cmd}
@@ -205,7 +210,7 @@ pkg_category="pkgpath"
 }
 @test "${REPO_NAME} verify pkgin show-category" {
 	# For some reason 0.9.4 segfaults
-	skip094 known fail
+	skip_if_version -lt 001000 "known fail"
 
 	for cmd in show-category sc; do
 		run pkgin ${cmd} ${category}
@@ -235,27 +240,15 @@ pkg_category="pkgpath"
 # installed correctly).
 #
 @test "${REPO_NAME} verify pkg_info" {
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-		compare_pkg_info "pkg_info-0.9.4.final"
-	else
-		compare_pkg_info "pkg_info.final"
-	fi
+	compare_pkg_info "pkg_info.final"
 }
 @test "${REPO_NAME} verify pkgin list" {
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-		compare_pkgin_list "pkgin-list-0.9.4.final"
-	else
-		compare_pkgin_list "pkgin-list.final"
-	fi
+	compare_pkgin_list "pkgin-list.final"
 }
 @test "${REPO_NAME} verify package file contents" {
 	run cat ${TEST_LOCALBASE}/share/doc/*
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-		compare_output "cat-share-doc-all-0.9.4.out"
-	else
-		compare_output "cat-share-doc-all.out"
-	fi
+	compare_output "cat-share-doc-all.out"
 }
 @test "${REPO_NAME} verify BUILD_DATE" {
 	run pkg_info -Q BUILD_DATE keep-1.0

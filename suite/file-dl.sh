@@ -76,6 +76,11 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 	run pkg_delete ${PKG_OK}
 	[ ${status} -eq 0 ]
 
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		run pkgin -fy update
+		[ ${status} -eq 0 ]
+	fi
+
 	run pkgin -y install ${PKG_OK}
 	[ ${status} -eq 0 ]
 	file_match "download-install.regex"
@@ -85,9 +90,12 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 }
 
 #
-# Test a failed download by removing the package first.
+# Test a failed download by removing the package first.  Not supported by
+# pkgin-0.9.x.
 #
 @test "${REPO_NAME} test failed pkgin download (not found)" {
+	skip_if_version -lt 001000 "Does not handle file not found"
+
 	run rm ${REPO_PACKAGES}/${PKG_NOTFOUND}.tgz
 	[ ${status} -eq 0 ]
 
@@ -101,9 +109,12 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 }
 
 #
-# Test a mismatched download by truncating the file to half its size.
+# Test a mismatched download by truncating the file to half its size, not
+# supported by pkgin-0.9.x.
 #
 @test "${REPO_NAME} test failed pkgin download (mismatch)" {
+	skip_if_version -lt 001000 "Does not handle mismatches"
+
 	truncfile="${REPO_PACKAGES}/${PKG_MISMATCH}.tgz"
 	len=$(wc -c < ${truncfile} | awk '{print $1}')
 	run dd if=${truncfile} of=${truncfile}.tmp bs=1 count=$((len / 2))

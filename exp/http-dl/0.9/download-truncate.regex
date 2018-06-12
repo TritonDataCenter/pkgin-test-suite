@@ -1,0 +1,9 @@
+download-truncate-1.0 is not available on the repository
+calculating dependencies... done.
+nothing to upgrade.
+1 package.* to be installed .[0-9]+[BK] to download, 22B to install.:
+download-truncate
+downloading packages...
+downloading download-truncate-1.0.tgz done
+installing packages...
+pkg_install warnings: 0, errors: 0

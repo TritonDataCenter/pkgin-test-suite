@@ -22,12 +22,14 @@
 # happen to match.
 #
 @test "${REPO_NAME} ensure BUILD_DATE is not current" {
+	skip_if_version -lt 001000 "Does not support BUILD_DATE"
 	run pkg_info -Q BUILD_DATE keep-1.0
 	[ ${status} -eq 0 ]
 	[ -n "${output}" ]
 	[ "${output}" != "${REPO_BUILD_DATE}" ]
 }
 @test "${REPO_NAME} ensure BUILD_DATE package exists in the cache" {
+	skip_if_version -lt 001000 "Does not support BUILD_DATE"
 	run [ -f ${TEST_PKGIN_CACHE}/keep-1.0.tgz ]
 	[ ${status} -eq 0 ]
 }
@@ -36,14 +38,26 @@
 # Test all parts of a full-upgrade, including no-op output, download only, and
 # an actual install.  Sprinkle some -f to ensure forced updates are correct.
 #
+# pkgin 0.9.x. requires an explicit update for repository refresh.
+#
+@test "${REPO_NAME} perform pkgin update" {
+	skip_if_version -ge 001000 "Not required for 0.10+"
+	run pkgin -fy update
+	[ ${status} -eq 0 ]
+}
 @test "${REPO_NAME} test pkgin full-upgrade (output only)" {
+	# Help 0.9 refresh the repository first
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		run pkgin -fy update
+		[ ${status} -eq 0 ]
+	fi
 	run pkgin -n fug
 	[ ${status} -eq 0 ]
-	file_match "full-upgrade-output-only.regex"
+	file_match -I "full-upgrade-output-only.regex"
 }
 @test "${REPO_NAME} test pkgin full-upgrade (download only)" {
 	# pkgin 0.9.4 doesn't download only!
-	skip094 known fail
+	skip_if_version -lt 001000 "known fail"
 
 	# The output order here is non-deterministic.
 	run pkgin -dfy fug
@@ -53,7 +67,7 @@
 @test "${REPO_NAME} test pkgin full-upgrade (output only after download)" {
 	run pkgin -fn fug
 	[ ${status} -eq 0 ]
-	file_match "full-upgrade-output-only-2.regex"
+	file_match -I "full-upgrade-output-only-2.regex"
 }
 @test "${REPO_NAME} test pkgin full-upgrade" {
 	run pkgin -y fug
@@ -75,6 +89,7 @@
 # repository BUILD_DATE
 #
 @test "${REPO_NAME} verify BUILD_DATE refresh" {
+	skip_if_version -lt 001000 "Does not support BUILD_DATE"
 	run pkg_info -Q BUILD_DATE keep-1.0
 	[ ${status} -eq 0 ]
 	[ -n "${output}" ]
@@ -102,9 +117,5 @@
 @test "${REPO_NAME} verify package file contents" {
 	run cat ${TEST_LOCALBASE}/share/doc/*
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} = "0.9.4" ]; then
-		compare_output "cat-share-doc-all-0.9.4.out"
-	else
-		compare_output "cat-share-doc-all.out"
-	fi
+	compare_output "cat-share-doc-all.out"
 }

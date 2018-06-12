@@ -36,13 +36,14 @@
 # Don't add any commands here, this file will be evaluated for every single
 # test.  Instead put any startup configuration in the test run at the bottom.
 #
-# Except we need to get the pkgin version to adjust certain test results.
+# Except we need to get the pkgin version to adjust certain test results.  Use
+# a merged version format so we can do integer comparisons.
 #
-PKGIN_VERSION=$(${REPO_PKGIN} -v | awk '{print $2}')
-pkgin094()
-{
-	[ ${PKGIN_VERSION} = "0.9.4" ]
-}
+PKGIN_V=$(${REPO_PKGIN} -v | awk '{print $2}')
+PKGIN_MAJOR=$(IFS="."; set -- ${PKGIN_V}; echo $1)
+PKGIN_MINOR=$(IFS="."; set -- ${PKGIN_V}; echo $2)
+PKGIN_PATCH=$(IFS="."; set -- ${PKGIN_V}; echo $3)
+PKGIN_VERSION=$(printf "%02d%02d%02d" ${PKGIN_MAJOR} ${PKGIN_MINOR} ${PKGIN_PATCH})
 
 #
 # These functions are called at the start and end of each test case.
@@ -51,7 +52,7 @@ setup()
 {
 	set -eu
 	# If pkgin version is before nanotime fixes we need to insert sleeps
-	if pkgin094; then
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		: sleep 1
 	fi
 }
@@ -145,11 +146,21 @@ gnudiff()
 compare_output()
 {
 	outfile=$1; shift
+	matchfile="${REPO_EXPDIR}/${outfile}"
 
 	# This function expects that a command has just been executed.
 	echo "${output}" >${REPO_OUTDIR}/${outfile}
 
-	run gnudiff -u ${REPO_EXPDIR}/${outfile} ${REPO_OUTDIR}/${outfile}
+	# Look for version-specific override directories if available.
+	for versdir in ${PKGIN_MAJOR}.${PKGIN_MINOR}.${PKGIN_PATCH} \
+		       ${PKGIN_MAJOR}.${PKGIN_MINOR}; do
+		if [ -f "${REPO_EXPDIR}/${versdir}/${outfile}" ]; then
+			matchfile="${REPO_EXPDIR}/${versdir}/${outfile}"
+			break
+		fi
+	done
+
+	run gnudiff -u ${matchfile} ${REPO_OUTDIR}/${outfile}
 	[ "$status" -eq 0 ]
 	[ -z "${output}" ]
 }
@@ -216,25 +227,38 @@ file_match()
 		shift
 	fi
 
-	file=$1; shift
+	filename="$1"; shift
+	matchfile="${REPO_EXPDIR}/${filename}"
+
+	# Look for version-specific override directories if available.
+	for versdir in ${PKGIN_MAJOR}.${PKGIN_MINOR}.${PKGIN_PATCH} \
+		       ${PKGIN_MAJOR}.${PKGIN_MINOR}; do
+		if [ -f "${REPO_EXPDIR}/${versdir}/${filename}" ]; then
+			matchfile="${REPO_EXPDIR}/${versdir}/${filename}"
+			break
+		fi
+	done
 
 	while read match; do
-		if $order; then
+		if ${order}; then
 			line_match ${nl} "${match}"
 		else
 			output_match "${match}"
 		fi
 		nl=$((nl + 1))
-	done < ${REPO_EXPDIR}/${file}
+	done < ${matchfile}
 	[ ${#lines[@]} -eq ${nl} ]
 }
 
 #
-# Skip tests unsuitable for 0.9.4
+# Skip tests unsuitable for the current release.
 #
-skip094()
+skip_if_version()
 {
-	if pkgin094; then
+	operand=$1; shift
+	release=$1; shift
+
+	if [ ${PKGIN_VERSION} ${operand} ${release} ]; then
 		skip "$@"
 	fi
 }

@@ -6,6 +6,15 @@ pkg_filesize="badfilesize-1.0"
 pkg_sizepkg="badsizepkg-1.0"
 pkg_badsum="badsum-1.0"
 
+#
+# Explicit update for 0.9.x. repository refresh
+#
+@test "${REPO_NAME} perform pkgin update" {
+	skip_if_version -ge 001000 "Not required for 0.10+"
+	run pkgin -fy update
+	[ ${status} -eq 0 ]
+}
+
 @test "${REPO_NAME} test massive FILE_SIZE" {
 	run pkgin -y install ${pkg_filesize}
 	[ ${status} -eq 1 ]
