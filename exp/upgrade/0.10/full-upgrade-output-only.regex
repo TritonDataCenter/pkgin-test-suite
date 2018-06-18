@@ -1,0 +1,12 @@
+downloading pkg_summary.* done.
+calculating dependencies...done.
+4 packages to be upgraded:
+deptree-middle-1.0
+deptree-top-1.0
+keep-1.0
+upgrade-1.0
+4 packages to be installed .[0-9]+[BK] to download, 0B to install.:
+deptree-middle-2.0
+deptree-top-2.0
+keep-1.0
+upgrade-2.0
