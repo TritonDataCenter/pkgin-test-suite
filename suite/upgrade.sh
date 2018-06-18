@@ -76,15 +76,6 @@
 }
 
 #
-# The pkgpath package should not be upgraded as the PKGPATH between version 1.0
-# and 2.0 is different.
-#
-@test "${REPO_NAME} verify PKGPATH change prevented upgrade" {
-	run pkg_info -qe pkgpath-1.0
-	[ ${status} -eq 0 ]
-}
-
-#
 # Now verify that the keep package has been refreshed with the current
 # repository BUILD_DATE
 #
@@ -97,12 +88,55 @@
 }
 
 #
-# Now test that explicitly installing upgrade-2.0 works.
+# Verify behaviour of PKGPATH with regards to upgrades:
 #
+#  1. An upgrade should not consider a newer version if PKGPATH does not match.
+#  2. A "pkgin import" using the original PKGPATH should not either.
+#  3. An explicit "pkgin install" of a different PKGPATH should upgrade.
+#
+# Versions of pkgin prior to 0.11.2 do not handle #2 correctly, they only
+# match on PKGNAME not FULLPKGNAME and end up performing an upgrade, so that
+# test is skipped.
+#
+@test "${REPO_NAME} verify PKGPATH change prevented upgrade" {
+	run pkg_info -qe pkgpath-1.0
+	[ ${status} -eq 0 ]
+}
+@test "${REPO_NAME} test pkgin import does not upgrade PKGPATH" {
+	skip_if_version -lt 001102
+
+	echo "testsuite/pkgpath1" >${REPO_OUTDIR}/import-pkgpath1
+	run pkgin -y import ${REPO_OUTDIR}/import-pkgpath1
+	[ ${status} -eq 0 ]
+
+	run pkg_info -qe pkgpath-1.0
+	[ ${status} -eq 0 ]
+}
 @test "${REPO_NAME} test install of package where PKGPATH changed" {
-	run pkgin -py install pkgpath-2.0
+	run pkgin -y install pkgpath-2.0
 	[ ${status} -eq 0 ]
 	file_match "install-pkgpath-upgrade.regex"
+}
+#
+# Just for completeness sake do a full downgrade and upgrade using
+# "pkgin import", ending up back where we started for verification.
+#
+@test "${REPO_NAME} test installing PKGPATH changes via import" {
+	skip_if_version -lt 001102
+
+	echo "testsuite/pkgpath1" >${REPO_OUTDIR}/import-pkgpath1
+	run pkgin -y import ${REPO_OUTDIR}/import-pkgpath1
+	[ ${status} -eq 0 ]
+
+	run pkg_info -qe pkgpath-1.0
+	[ ${status} -eq 0 ]
+
+	echo "testsuite/pkgpath2" >${REPO_OUTDIR}/import-pkgpath2
+	run pkgin -y import ${REPO_OUTDIR}/import-pkgpath2
+	[ ${status} -eq 0 ]
+
+	run pkg_info -qe pkgpath-2.0
+	[ ${status} -eq 0 ]
 }
 
 #

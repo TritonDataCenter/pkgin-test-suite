@@ -1,9 +1,10 @@
 processing remote summary .http://.*
 downloading pkg_summary.* done.
 calculating dependencies...done.
-4 packages to be downloaded .[0-9]+[BK] to download.:
+5 packages to be downloaded .[0-9]+[BK] to download.:
 .*
 downloading deptree-middle-2.0.tgz done.
 downloading deptree-top-2.0.tgz done.
 downloading keep-1.0.tgz done.
+downloading pkgpath-1.0.tgz done.
 downloading upgrade-2.0.tgz done.
