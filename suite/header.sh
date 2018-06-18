@@ -51,10 +51,6 @@ PKGIN_VERSION=$(printf "%02d%02d%02d" ${PKGIN_MAJOR} ${PKGIN_MINOR} ${PKGIN_PATC
 setup()
 {
 	set -eu
-	# If pkgin version is before nanotime fixes we need to insert sleeps
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		: sleep 1
-	fi
 }
 teardown()
 {
@@ -92,14 +88,35 @@ stop_webserver()
 }
 
 #
+# pkgin 0.9 cannot detect pkgdb changes with greater granularity than 1 second,
+# so we need to ensure that any operations that modify the pkgdb wait until at
+# least a second has passed since the last change.
+#
+# This ensures that subsequent pkgin calls will detect it has been modified,
+# and thus the output will be deterministic.  Otherwise, for example, the
+# "processing local summary" messages may be missing, causing exp failures.
+#
+sleep_pkgdb_if_required()
+{
+	if [ ${PKGIN_VERSION} -lt 001000 -a -d ${TEST_PKG_DBDIR} ]; then
+		out=$(find ${TEST_PKG_DBDIR} -depth 0 -mtime +1s)
+		if [ -z "${out}" ]; then
+			# Two seconds are required to avoid rounding errors.
+			sleep 2
+		fi
+	fi
+}
+#
 # Command wrappers to ensure we run the right bits and to simplify tests.
 #
 pkg_add()
 {
+	sleep_pkgdb_if_required
 	${REPO_PKG_ADD} "$@"
 }
 pkg_delete()
 {
+	sleep_pkgdb_if_required
 	${REPO_PKG_DELETE} "$@"
 }
 pkg_info()
@@ -108,6 +125,7 @@ pkg_info()
 }
 pkgin()
 {
+	sleep_pkgdb_if_required
 	${REPO_PKGIN} "$@"
 }
 #

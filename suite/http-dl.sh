@@ -23,7 +23,7 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 	run pkg_add keep
 	[ ${status} -eq 0 ]
 
-	run pkgin up
+	run pkgin -fy up
 	[ ${status} -eq 0 ]
 }
 
@@ -65,7 +65,7 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 	run rmdir ${TEST_PKGIN_CACHE}
 	[ ${status} -eq 0 ]
 
-	[ ! -d ${TEST_PKGIN_CACHE} ]
+	run [ ! -d ${TEST_PKGIN_CACHE} ]
 	[ ${status} -eq 0 ]
 }
 
@@ -75,11 +75,6 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 @test "${REPO_NAME} test download and install" {
 	run pkg_delete ${PKG_OK}
 	[ ${status} -eq 0 ]
-
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		run pkgin -fy update
-		[ ${status} -eq 0 ]
-	fi
 
 	run pkgin -y install ${PKG_OK}
 	[ ${status} -eq 0 ]
