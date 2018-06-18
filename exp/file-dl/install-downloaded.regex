@@ -1,6 +1,8 @@
 calculating dependencies...done.
-1 packages to be installed .0B to download, 16B to install.:
-download-ok-1.0
+1 package to install:
+  download-ok-1.0
+0 to refresh, 0 to upgrade, 1 to install
+0B to download, 16B to install
 installing download-ok-1.0...
 pkg_install warnings: 0, errors: 0
 reading local summary...

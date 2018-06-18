@@ -1,5 +1,7 @@
 download error: .*download-truncate-1.0.tgz truncated
 calculating dependencies...done
-1 package.* to be installed .[0-9]+[BK] to download, 22B to install.:
-download-truncate
+1 package to install:
+  download-truncate-1.0
+0 to refresh, 0 to upgrade, 1 to install
+[0-9]+[BK] to download, 22B to install
 downloading download-truncate-1.0.tgz done
