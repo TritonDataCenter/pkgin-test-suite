@@ -366,7 +366,7 @@ ${REPOPKG_BUILDINFO.${repo}.${pkg}}: ${TEST_BUILDINFO}
 	@echo "PKGPATH=${PKG_PKGPATH.${pkg}:Utestsuite/${pkg:C/-[0-9].*$//}}" >>${.TARGET:Q}
 .    if exists(${PKG_BUILDINFO.${repo}.${pkg}})
 	@sed ${SYSTEM_SUBST} ${TEST_SUBST} ${REPO_SUBST.${repo}} \
-		${PKG_SUBST.${repo}${pkg}} ${PKG_BUILDINFO.${repo}.${pkg}} \
+		${PKG_SUBST.${repo}.${pkg}} ${PKG_BUILDINFO.${repo}.${pkg}} \
 		>>${.TARGET:Q}
 .    endif
 #
