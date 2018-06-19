@@ -46,11 +46,6 @@
 	[ ${status} -eq 0 ]
 }
 @test "${REPO_NAME} test pkgin full-upgrade (output only)" {
-	# Help 0.9 refresh the repository first
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		run pkgin -fy update
-		[ ${status} -eq 0 ]
-	fi
 	run pkgin -n fug
 	[ ${status} -eq 0 ]
 	file_match -I "full-upgrade-output-only.regex"
