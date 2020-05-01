@@ -38,7 +38,8 @@ pkg_nonexist="pkg-does-not-exist"
 	run pkgin update
 	[ ${status} -eq 0 ]
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		output_match "downloading pkg_summary"
+		line_match 0 "download started."
+		line_match 1 "download ended."
 	else
 		line_match 0 "processing remote summary"
 		line_match 1 "downloading pkg_summary"
@@ -57,7 +58,8 @@ pkg_nonexist="pkg-does-not-exist"
 	run pkgin up
 	[ ${status} -eq 0 ]
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		output_match "downloading pkg_summary"
+		line_match 0 "download started."
+		line_match 1 "download ended."
 	else
 		line_match 0 "processing remote summary"
 		line_match 1 "database.*is.up-to-date"
@@ -89,7 +91,8 @@ pkg_nonexist="pkg-does-not-exist"
 	for cmd in search se; do
 		run pkgin ${cmd}
 		[ ${status} -eq 1 ]
-		line_match 0 "pkgin: missing search string"
+		# pkgin-0.9.4 includes the version
+		line_match 0 "pkgin.*: missing search string"
 	done
 }
 @test "${REPO_NAME} test pkgin search (missing package)" {
@@ -135,7 +138,7 @@ pkg_nonexist="pkg-does-not-exist"
 		run pkgin ${cmd} ${pkg_nonexist}
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
-			output_match "pkgin: empty local package list."
+			output_match "pkgin.*: empty local package list."
 		else
 			[ "${output}" = "pkgin: empty local package list." ]
 		fi
@@ -176,7 +179,7 @@ pkg_nonexist="pkg-does-not-exist"
 		run pkgin ${cmd}
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
-			output_match "pkgin: empty local package list."
+			output_match "pkgin.*: empty local package list."
 		else
 			[ "${output}" = "pkgin: empty local package list." ]
 		fi
@@ -215,7 +218,7 @@ pkg_nonexist="pkg-does-not-exist"
 		run pkgin ${cmd}
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
-			output_match "pkgin: missing package name"
+			output_match "pkgin.*: missing package name"
 		else
 			[ "${output}" = "pkgin: missing package name" ]
 		fi
@@ -252,19 +255,50 @@ pkg_nonexist="pkg-does-not-exist"
 	# Invalid command
 	run pkgin ojnk
 	[ ${status} -eq 1 ]
-	compare_output "pkgin.usage"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		# pkgin 0.9.4 doesn't call setprogname()
+		line_match 0 "Usage: pkgin.*"
+		line_match 1 "Commands and shortcuts."
+		line_match 2 "list.*"
+		line_match 29 "stats.*"
+	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+		compare_output "0.12" "pkgin.usage"
+	else
+		compare_output "pkgin.usage"
+	fi
+
 }
 @test "${REPO_NAME} test pkgin usage (no command)" {
 	run pkgin
 	[ ${status} -eq 1 ]
-	compare_output "pkgin.usage"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		# pkgin 0.9.4 doesn't call setprogname()
+		line_match 0 "Usage: pkgin.*"
+		line_match 1 "Commands and shortcuts."
+		line_match 2 "list.*"
+		line_match 29 "stats.*"
+	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+		compare_output "0.12" "pkgin.usage"
+	else
+		compare_output "pkgin.usage"
+	fi
 }
 @test "${REPO_NAME} test pkgin -h" {
 	# 0.9 exits failure and changes the output slightly, just skip.
 	skip_if_version -lt 001000
 	run pkgin -h
 	[ ${status} -eq 0 ]
-	compare_output "pkgin.usage"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		# pkgin 0.9.4 doesn't call setprogname()
+		line_match 0 "Usage: pkgin.*"
+		line_match 1 "Commands and shortcuts."
+		line_match 2 "list.*"
+		line_match 29 "stats.*"
+	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+		compare_output "0.12" "pkgin.usage"
+	else
+		compare_output "pkgin.usage"
+	fi
 }
 @test "${REPO_NAME} test pkgin -v" {
 	run pkgin -v

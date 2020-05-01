@@ -1,13 +1,17 @@
-downloading pkg_summary.*
+download started.
+download ended.
 calculating dependencies... done.
 4 packages to be upgraded:
 .*
 4 packages to be installed .[0-9]+[BK] to download, 0B to install.:
 .*
 downloading packages...
-downloading deptree-middle-2.0.tgz done.
-downloading upgrade-2.0.tgz done.
-downloading deptree-top-2.0.tgz done.
+download started.
+download ended.
+download started.
+download ended.
+download started.
+download ended.
 removing packages to be upgraded...
 removing upgrade-1.0...
 removing deptree-top-1.0...

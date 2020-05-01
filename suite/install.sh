@@ -88,7 +88,13 @@ pkg_category="pkgpath"
 	fi
 	run pkgin -y install ${pkg_first}
 	[ ${status} -eq 0 ]
-	file_match "install-against-empty.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "install-against-empty.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "install-against-empty.regex"
+	else
+		file_match "install-against-empty.regex"
+	fi
 }
 @test "${REPO_NAME} verify pkgin list against empty installation" {
 	compare_pkgin_list "pkgin-list.start"
@@ -102,7 +108,15 @@ pkg_category="pkgpath"
 	run pkgin -fy install ${pkg_rest}
 	[ ${status} -eq 0 ]
 	# The output order here is nondeterministic.
-	file_match -I "install-remaining.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match -I "0.9" "install-remaining.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match -I "0.10" "install-remaining.regex"
+	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+		file_match -I "0.12" "install-remaining.regex"
+	else
+		file_match -I "install-remaining.regex"
+	fi
 }
 # Should only contain "installing .." lines.
 @test "${REPO_NAME} verify TEST_PKG_INSTALL_LOG contents" {

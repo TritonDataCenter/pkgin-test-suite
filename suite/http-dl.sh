@@ -33,7 +33,13 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 @test "${REPO_NAME} test download-only" {
 	run pkgin -dy install ${PKG_OK}
 	[ ${status} -eq 0 ]
-	file_match "download-only.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "download-only.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "download-only.regex"
+	else
+		file_match "download-only.regex"
+	fi
 
 	run [ -f ${TEST_PKGIN_CACHE}/${PKG_OK}.tgz ]
 	[ ${status} -eq 0 ]
@@ -48,7 +54,13 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 @test "${REPO_NAME} test install of already-downloaded package" {
 	run pkgin -y install ${PKG_OK}
 	[ ${status} -eq 0 ]
-	file_match "install-downloaded.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "install-downloaded.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "install-downloaded.regex"
+	else
+		file_match "install-downloaded.regex"
+	fi
 
 	run pkg_info -qe ${PKG_OK}
 	[ ${status} -eq 0 ]
@@ -78,7 +90,13 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 
 	run pkgin -y install ${PKG_OK}
 	[ ${status} -eq 0 ]
-	file_match "download-install.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "download-install.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "download-install.regex"
+	else
+		file_match "download-install.regex"
+	fi
 
 	run pkg_info -qe ${PKG_OK}
 	[ ${status} -eq 0 ]
@@ -93,7 +111,13 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 @test "${REPO_NAME} test failed download (not found)" {
 	run pkgin -y install ${PKG_NOTFOUND}
 	[ ${status} -eq 1 ]
-	file_match "download-notfound.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "download-notfound.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "download-notfound.regex"
+	else
+		file_match "download-notfound.regex"
+	fi
 
 	run [ -L ${TEST_PKGIN_CACHE}/${PKG_NOTFOUND}.tgz ]
 	[ ${status} -eq 1 ]
@@ -101,7 +125,13 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 @test "${REPO_NAME} test failed download (truncated)" {
 	run pkgin -y install ${PKG_TRUNCATE}
 	[ ${status} -eq 1 ]
-	file_match "download-truncate.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "download-truncate.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "download-truncate.regex"
+	else
+		file_match "download-truncate.regex"
+	fi
 
 	run [ -L ${TEST_PKGIN_CACHE}/${PKG_TRUNCATE}.tgz ]
 	[ ${status} -eq 1 ]
@@ -109,7 +139,13 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 @test "${REPO_NAME} test failed download (mismatch)" {
 	run pkgin -y install ${PKG_MISMATCH}
 	[ ${status} -eq 1 ]
-	file_match "download-mismatch.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "download-mismatch.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "download-mismatch.regex"
+	else
+		file_match "download-mismatch.regex"
+	fi
 
 	run [ -L ${TEST_PKGIN_CACHE}/${PKG_MISMATCH}.tgz ]
 	[ ${status} -eq 1 ]
@@ -121,7 +157,13 @@ PKG_MISMATCH="@PKG_MISMATCH@"
 @test "${REPO_NAME} test all failed downloads" {
 	run pkgin -y install ${PKG_NOTFOUND} ${PKG_TRUNCATE} ${PKG_MISMATCH}
 	[ ${status} -eq 1 ]
-	file_match "download-all-failed.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "download-all-failed.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "download-all-failed.regex"
+	else
+		file_match "download-all-failed.regex"
+	fi
 }
 
 # Verify everything is as it should be at the end of the tests.

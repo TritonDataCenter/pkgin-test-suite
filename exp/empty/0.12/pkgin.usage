@@ -6,8 +6,8 @@ avail               (av  ) - List all available remote packages
 search              (se  ) - Search for a remote package
 install             (in  ) - Install or upgrade packages
 update              (up  ) - Refresh local and remote package lists
-upgrade             (ug  ) - Upgrade all packages
-full-upgrade        (fug ) - Upgrade all packages (deprecated)
+upgrade             (ug  ) - Upgrade only packages marked with the keep flag
+full-upgrade        (fug ) - Upgrade all packages
 remove              (rm  ) - Remove packages and any dependent packages
 keep                (ke  ) - Mark packages that should be kept
 unkeep              (uk  ) - Mark packages that can be autoremoved

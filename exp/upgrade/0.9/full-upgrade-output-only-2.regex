@@ -1,5 +1,6 @@
-downloading pkg_summary.*
-.*
+download started.
+cleaning database from http.* entries...
+download ended.
 calculating dependencies... done.
 4 packages to be upgraded:
 upgrade-1.0

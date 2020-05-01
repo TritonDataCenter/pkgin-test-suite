@@ -1,6 +1,9 @@
-downloading pkg_summary.* done
+download started.
+download ended.
 calculating dependencies... done.
-1 package.* to be downloaded .[0-9]+[BK] to download.:
+nothing to upgrade.
+1 package.* to be installed .[0-9]+[BK] to download, 16B to install.:
 download-ok-1.0
 downloading packages...
-downloading download-ok-1.0.tgz done.
+download started.
+download ended.

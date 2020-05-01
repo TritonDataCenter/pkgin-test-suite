@@ -163,20 +163,17 @@ gnudiff()
 #
 compare_output()
 {
-	outfile=$1; shift
-	matchfile="${REPO_EXPDIR}/${outfile}"
+	if [ $# -eq 2 ]; then
+		versdir=$1; shift
+		outfile=$1; shift
+		matchfile="${REPO_EXPDIR}/${versdir}/${outfile}"
+	else
+		outfile=$1; shift
+		matchfile="${REPO_EXPDIR}/${outfile}"
+	fi
 
 	# This function expects that a command has just been executed.
 	echo "${output}" >${REPO_OUTDIR}/${outfile}
-
-	# Look for version-specific override directories if available.
-	for versdir in ${PKGIN_MAJOR}.${PKGIN_MINOR}.${PKGIN_PATCH} \
-		       ${PKGIN_MAJOR}.${PKGIN_MINOR}; do
-		if [ -f "${REPO_EXPDIR}/${versdir}/${outfile}" ]; then
-			matchfile="${REPO_EXPDIR}/${versdir}/${outfile}"
-			break
-		fi
-	done
 
 	run gnudiff -u ${matchfile} ${REPO_OUTDIR}/${outfile}
 	[ "$status" -eq 0 ]
@@ -245,17 +242,15 @@ file_match()
 		shift
 	fi
 
-	filename="$1"; shift
-	matchfile="${REPO_EXPDIR}/${filename}"
+	if [ $# -eq 2 ]; then
+		versdir=$1; shift
+		outfile=$1; shift
+		matchfile="${REPO_EXPDIR}/${versdir}/${outfile}"
+	else
+		outfile=$1; shift
+		matchfile="${REPO_EXPDIR}/${outfile}"
+	fi
 
-	# Look for version-specific override directories if available.
-	for versdir in ${PKGIN_MAJOR}.${PKGIN_MINOR}.${PKGIN_PATCH} \
-		       ${PKGIN_MAJOR}.${PKGIN_MINOR}; do
-		if [ -f "${REPO_EXPDIR}/${versdir}/${filename}" ]; then
-			matchfile="${REPO_EXPDIR}/${versdir}/${filename}"
-			break
-		fi
-	done
 
 	while read match; do
 		if ${order}; then

@@ -48,7 +48,13 @@
 @test "${REPO_NAME} test pkgin full-upgrade (output only)" {
 	run pkgin -n fug
 	[ ${status} -eq 0 ]
-	file_match -I "full-upgrade-output-only.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match -I "0.9" "full-upgrade-output-only.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match -I "0.10" "full-upgrade-output-only.regex"
+	else
+		file_match -I "full-upgrade-output-only.regex"
+	fi
 }
 @test "${REPO_NAME} test pkgin full-upgrade (download only)" {
 	# pkgin 0.9.4 doesn't download only!
@@ -56,18 +62,42 @@
 
 	# The output order here is non-deterministic.
 	run pkgin -dfy fug
-	file_match -I "full-upgrade-download-only.regex"
+	if [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match -I "0.10" "full-upgrade-download-only.regex"
+	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+		file_match -I "0.12" "full-upgrade-download-only.regex"
+	elif [ ${PKGIN_VERSION} -lt 001600 ]; then
+		# Caused by a bug introduced in 0.13, trying to record keep
+		# packages after only downloading.  Should have run test suite!
+		file_match -I "0.15" "full-upgrade-download-only.regex"
+	else
+		file_match -I "full-upgrade-download-only.regex"
+	fi
 }
 
 @test "${REPO_NAME} test pkgin full-upgrade (output only after download)" {
 	run pkgin -fn fug
 	[ ${status} -eq 0 ]
-	file_match -I "full-upgrade-output-only-2.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match -I "0.9" "full-upgrade-output-only-2.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match -I "0.10" "full-upgrade-output-only-2.regex"
+	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+		file_match -I "0.12" "full-upgrade-output-only-2.regex"
+	else
+		file_match -I "full-upgrade-output-only-2.regex"
+	fi
 }
 @test "${REPO_NAME} test pkgin full-upgrade" {
 	run pkgin -y fug
 	[ ${status} -eq 0 ]
-	file_match "full-upgrade.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "full-upgrade.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "full-upgrade.regex"
+	else
+		file_match "full-upgrade.regex"
+	fi
 }
 
 #
@@ -110,7 +140,13 @@
 @test "${REPO_NAME} test install of package where PKGPATH changed" {
 	run pkgin -y install pkgpath-2.0
 	[ ${status} -eq 0 ]
-	file_match "install-pkgpath-upgrade.regex"
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		file_match "0.9" "install-pkgpath-upgrade.regex"
+	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
+		file_match "0.10" "install-pkgpath-upgrade.regex"
+	else
+		file_match "install-pkgpath-upgrade.regex"
+	fi
 }
 #
 # Just for completeness sake do a full downgrade and upgrade using

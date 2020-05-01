@@ -1,15 +1,21 @@
-downloading pkg_summary.*
+download started.
+.*
 .*
 calculating dependencies... done.
 nothing to upgrade.
 5 packages to be installed .[0-9]+[BK] to download, 78B to install.:
 .*
 downloading packages...
-downloading deptree-bottom-1.0.tgz done.
-downloading deptree-middle-1.0.tgz done.
-downloading deptree-top-1.0.tgz done.
-downloading pkgpath-1.0.tgz done.
-downloading upgrade-1.0.tgz done.
+download started.
+download ended.
+download started.
+download ended.
+download started.
+download ended.
+download started.
+download ended.
+download started.
+download ended.
 installing packages...
 installing deptree-bottom-1.0...
 installing deptree-middle-1.0...
