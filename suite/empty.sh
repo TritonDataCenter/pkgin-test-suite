@@ -303,7 +303,11 @@ pkg_nonexist="pkg-does-not-exist"
 @test "${REPO_NAME} test pkgin -v" {
 	run pkgin -v
 	[ ${status} -eq 0 ]
-	output_match "^pkgin.*for.*using.SQLite"
+	if [ ${PKGIN_VERSION} -lt 200000 ]; then
+		output_match "^pkgin.*for.*using.SQLite"
+	else
+		output_match "^pkgin.*using.SQLite"
+	fi
 }
 
 #
