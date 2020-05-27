@@ -39,7 +39,7 @@
 # Except we need to get the pkgin version to adjust certain test results.  Use
 # a merged version format so we can do integer comparisons.
 #
-PKGIN_V=$(${REPO_PKGIN} -v | awk '{print $2}')
+PKGIN_V=$(${REPO_PKGIN} -v | awk '{sub(/-dev/, "", $2); print $2}')
 PKGIN_MAJOR=$(IFS="."; set -- ${PKGIN_V}; echo $1)
 PKGIN_MINOR=$(IFS="."; set -- ${PKGIN_V}; echo $2)
 PKGIN_PATCH=$(IFS="."; set -- ${PKGIN_V}; echo $3)
