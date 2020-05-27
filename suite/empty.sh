@@ -127,9 +127,11 @@ pkg_nonexist="pkg-does-not-exist"
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "empty available packages list"
-		else
+		elif [ ${PKGIN_VERSION} -le 200501 ]; then
 			line_match 0 "empty available packages list"
 			line_match 1 "nothing to do."
+		else
+			output_match "empty available packages list"
 		fi
 	done
 }
