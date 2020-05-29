@@ -101,6 +101,22 @@
 }
 
 #
+# Ensure that upgrades did not change status of keep/no-keep packages.
+#
+@test "${REPO_NAME} verify keep/no-keep post-upgrade" {
+	for cmd in show-keep sk; do
+		run pkgin_sorted ${cmd}
+		[ ${status} -eq 0 ]
+		compare_output "pkgin.show-keep"
+	done
+        for cmd in show-no-keep snk; do
+		run pkgin_sorted ${cmd}
+		[ ${status} -eq 0 ]
+		compare_output "pkgin.show-no-keep"
+	done
+}
+
+#
 # Now verify that the keep package has been refreshed with the current
 # repository BUILD_DATE
 #
