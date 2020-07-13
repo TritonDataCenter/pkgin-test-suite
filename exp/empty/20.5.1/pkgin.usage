@@ -1,4 +1,4 @@
-Usage: pkgin [-cdfhlnPtvVy] command [package ...]
+Usage: pkgin [-cdfFhlnPtvVy] command [package ...]
 
 Commands and shortcuts:
 list                (ls  ) - List installed local packages

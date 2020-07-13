@@ -95,6 +95,8 @@
 		file_match "0.9" "full-upgrade.regex"
 	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
 		file_match "0.10" "full-upgrade.regex"
+	elif [ ${PKGIN_VERSION} -le 200501 ]; then
+		file_match "20.5.1" "full-upgrade.regex"
 	else
 		file_match "full-upgrade.regex"
 	fi

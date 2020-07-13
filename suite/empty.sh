@@ -265,6 +265,8 @@ pkg_nonexist="pkg-does-not-exist"
 		line_match 29 "stats.*"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
+	elif [ ${PKGIN_VERSION} -le 200501 ]; then
+		compare_output "20.5.1" "pkgin.usage"
 	else
 		compare_output "pkgin.usage"
 	fi
@@ -281,6 +283,8 @@ pkg_nonexist="pkg-does-not-exist"
 		line_match 29 "stats.*"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
+	elif [ ${PKGIN_VERSION} -le 200501 ]; then
+		compare_output "20.5.1" "pkgin.usage"
 	else
 		compare_output "pkgin.usage"
 	fi
@@ -298,6 +302,8 @@ pkg_nonexist="pkg-does-not-exist"
 		line_match 29 "stats.*"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
+	elif [ ${PKGIN_VERSION} -le 200501 ]; then
+		compare_output "20.5.1" "pkgin.usage"
 	else
 		compare_output "pkgin.usage"
 	fi
