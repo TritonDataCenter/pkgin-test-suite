@@ -50,17 +50,12 @@ PKGIN_VERSION=$(printf "%02d%02d%02d" ${PKGIN_MAJOR} ${PKGIN_MINOR} ${PKGIN_PATC
 #
 setup()
 {
-	set -eu
+	# Can't be set until https://github.com/bats-core/bats-core/issues/340
+	# is resolved.
+	: set -eu
 }
 teardown()
 {
-	# Debug output, only shown on test failure.  Requires a patched copy
-	# of bats to save the variable state.
-	echo cmd=${bats_save_cmd}
-	echo status=${bats_save_status}
-	for ((i=0; i<=$((${#bats_save_lines[@]} - 1)); i++)); do
-		echo "line${i}=${bats_save_lines[${i}]}"
-	done
 	set +eu
 }
 
