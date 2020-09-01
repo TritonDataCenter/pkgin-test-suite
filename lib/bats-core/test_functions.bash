@@ -42,8 +42,6 @@ run() {
   IFS=$'\n' lines=($output)
   IFS="$origIFS"
   set "-$origFlags"
-  bats_save_cmd="$@"
-  bats_save_status="${status}"
 }
 
 setup() {
@@ -56,7 +54,7 @@ teardown() {
 
 skip() {
   # if this is a skip in teardown ...
-  if [[ -n "$BATS_TEARDOWN_STARTED" ]]; then
+  if [[ -n "${BATS_TEARDOWN_STARTED-}" ]]; then
     # ... we want to skip the rest of teardown.
     # communicate to bats_exit_trap that the teardown was completed without error
     # shellcheck disable=SC2034
