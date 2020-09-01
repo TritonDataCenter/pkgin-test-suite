@@ -52,7 +52,7 @@ setup()
 {
 	# Can't be set until https://github.com/bats-core/bats-core/issues/340
 	# is resolved.
-	: set -eu
+	set -eu
 }
 teardown()
 {
