@@ -34,7 +34,11 @@ Currently tested to be clean are:
  * pkgin-0.13.0
  * pkgin-0.14.0
  * pkgin-0.15.0
+ * pkgin-0.16.0
  * pkgin-0.16.1
+ * pkgin-20.5.1
+ * pkgin-20.7.0
+ * pkgin-20.8.0
 
 ## Running
 
