@@ -50,12 +50,16 @@ PKGIN_VERSION=$(printf "%02d%02d%02d" ${PKGIN_MAJOR} ${PKGIN_MINOR} ${PKGIN_PATC
 #
 setup()
 {
-	# Can't be set until https://github.com/bats-core/bats-core/issues/340
-	# is resolved.
 	set -eu
 }
 teardown()
 {
+	# Print output on test failure for easier debugging.
+	if [ ${BATS_ERROR_STATUS} -ne 0 ]; then
+		for ((i=0; i < $((${#lines[@]})); i++)); do
+			printf "%6d %s\n" "$(($i + 1))" "${lines[${i}]}"
+		done
+	fi
 	set +eu
 }
 
