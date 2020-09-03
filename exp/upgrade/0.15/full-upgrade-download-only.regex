@@ -6,11 +6,11 @@ calculating dependencies...done.
 5 packages to download:
   .*
 [0-9]+[BK] to download
+downloading upgrade-2.0.tgz done.
+downloading refresh-1.0.tgz done.
 downloading deptree-middle-2.0.tgz done.
 downloading deptree-top-2.0.tgz done.
-downloading keep-1.0.tgz done.
-downloading pkgpath-1.0.tgz done.
-downloading upgrade-2.0.tgz done.
+downloading deptree-bottom-2.0.tgz done.
 reading local summary...
 processing local summary...
 no such installed package deptree-top-2.0

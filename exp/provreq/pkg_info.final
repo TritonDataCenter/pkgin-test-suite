@@ -1,0 +1,3 @@
+preserve-1.0        Package should remain at all times
+provides-1.0        Package provides libprovides.so
+requires-1.0        Package requires libprovides.so

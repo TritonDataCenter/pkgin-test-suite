@@ -1,7 +1,7 @@
 Local package database:
-	Installed packages: 6
-	Disk space occupied: 87B
+	Installed packages: 5
+	Disk space occupied: [0-9]+[BK]
 Remote package database.s.:
 	Number of repositories: 1
 	Packages available: 6
-	Total size of packages: [0-9]+K
+	Total size of packages: [0-9]+[BK]

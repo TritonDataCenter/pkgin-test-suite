@@ -1,4 +1,4 @@
 full dependency tree for deptree-top-1.0
-	keep>=1.0
+	preserve>=1.0
 	deptree-bottom-[0-9]*
 	deptree-middle>=1.0

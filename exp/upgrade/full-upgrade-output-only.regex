@@ -1,11 +1,12 @@
 downloading pkg_summary.* done.
 calculating dependencies...done.
-2 packages to refresh:
-keep-1.0
-pkgpath-1.0
+1 package to refresh:
+refresh-1.0
 3 packages to upgrade:
 upgrade-2.0
 deptree-top-2.0
+deptree-bottom-2.0
+1 package to install:
 deptree-middle-2.0
-2 to refresh, 3 to upgrade, 0 to install
-[0-9]+[BK] to download, 0B to install
+1 to refresh, 3 to upgrade, 1 to install
+[0-9]+[BK] to download, [0-9]+[BK] to install

@@ -6,6 +6,9 @@
 
 set -eu
 
+: ${REPO_HTTPD_ERR:=${HTTPD_ERR}}
+: ${REPO_HTTPD_LOG:=${HTTPD_LOG}}
+
 if [ -z "${REPO_PACKAGES}" ]; then
 	echo "REPO_PACKAGES is a required variable" >&2
 	exit 1

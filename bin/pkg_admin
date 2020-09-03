@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# Wrapper script for pkg_admin(1).
+#
+
+set -eu
+
+if [ ${BATS_PKGIN_TEST_SUITE} -ne 1 ]; then
+	echo "ERROR: BATS_PKGIN_TEST_SUITE is not set." >&2
+	echo "This script only works in the pkgin-test-suite environment" >&2
+	exit 1
+fi
+
+pkg_admin -K ${PKG_DBDIR} -C /dev/null "$@"
