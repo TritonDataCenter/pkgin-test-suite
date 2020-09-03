@@ -11,11 +11,6 @@ if [ -z "${REPO_PACKAGES}" ]; then
 	exit 1
 fi
 
-if [ -z "${REPO_HTTPD_TIME}" ]; then
-	echo "REPO_HTTPD_TIME is a required variable" >&2
-	exit 1
-fi
-
 if [ -n "${REPO_HTTPD_ERR}" ]; then
 	exec 2>>${REPO_HTTPD_ERR}
 fi
@@ -61,8 +56,13 @@ sendhdrs()
 	*)   return ;;
 	esac
 
+	now=$(perl -e '
+		use POSIX qw(strftime);
+		printf "%s\n", strftime "%a, %e %b %Y %H:%M:%S GMT", localtime;
+	')
+
 	printf "Server: pkgin-test-suite/0.1\r\n"
-	printf "Date: ${REPO_HTTPD_TIME}\r\n"
+	printf "Date: ${now}\r\n"
 
 	# Special handling for certain files to trigger test issues.
 	if [[ "${file}" =~ download-notfound ]]; then
@@ -72,12 +72,18 @@ sendhdrs()
 		if [[ "${file}" =~ download-mismatch ]]; then
 			len=$((len/2))
 		fi
+		lastmod=$(perl -e '
+			use POSIX qw(strftime);
+			printf "%s\n",
+			    strftime("%a, %e %b %Y %H:%M:%S GMT",
+			        gmtime((stat("'${file}'"))[9]));
+			')
 		printf "Content-Length: ${len}\r\n"
 		printf "Content-Type: ${ctype_binary}\r\n"
-		printf "Last-Modified: ${REPO_HTTPD_TIME}\r\n"
+		printf "Last-Modified: ${lastmod}\r\n"
 		debuglog "             len=${len}"
 		debuglog "             ctype=${ctype_binary}"
-		debuglog "             mtime=${REPO_HTTPD_TIME}"
+		debuglog "             mtime=${lastmod}"
 	elif [ -d "${file}" ]; then
 		printf "Content-Type: ${ctype_html}\r\n"
 		debuglog "             ctype=${ctype_html}"

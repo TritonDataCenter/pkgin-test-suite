@@ -257,10 +257,9 @@ REPO_PKG_PATH.${repo}=		file://${REPO_PACKAGES.${repo}:Q}
 .  endif
 #
 # Time formats.  BUILD_DATE for pkg_create matching what pkgsrc uses,
-# HTTPD_TIME in HTTP format for the httpd, and TOUCH for touch(1).
+# and TOUCH for touch(1).
 #
 REPO_BUILD_DATE.${repo}=	2018-02-26 12:34:${REPO_EPOCH.${repo}} +0000
-REPO_HTTPD_TIME.${repo}=	Mon, 26 Feb 2018 12:34:${REPO_EPOCH.${repo}} GMT
 REPO_TOUCH.${repo}=		201802261234.${REPO_EPOCH.${repo}}
 #
 REPO_VARS+=			REPO_BINDIR REPO_EXPDIR REPO_OUTDIR
@@ -315,12 +314,11 @@ ${REPO_HTTPD.${repo}}: ${.MAKE.MAKEFILES}
 	@mkdir -p ${.TARGET:H:Q}
 	@echo "#!/bin/sh" >${.TARGET:Q}
 	@echo ": \$${REPO_HTTP_PORT:=${REPO_HTTP_PORT.${repo}:Q}}" >>${.TARGET:Q}
-	@echo ": \$${REPO_HTTPD_TIME:=${REPO_HTTPD_TIME.${repo}}}" >>${.TARGET:Q}
 	@echo ": \$${REPO_HTTPD_ERR:=${REPO_OUTDIR.${repo}:Q}/httpd.err}" >>${.TARGET:Q}
 	@echo ": \$${REPO_HTTPD_LOG:=${REPO_OUTDIR.${repo}:Q}/httpd.log}" >>${.TARGET:Q}
 	@echo ": \$${REPO_PACKAGES:=${REPO_PACKAGES.${repo}:Q}}" >>${.TARGET:Q}
 	@echo ": \$${TEST_HTTPD:=${TEST_HTTPD:Q}}" >>${.TARGET:Q}
-	@echo "export REPO_PACKAGES REPO_HTTPD_TIME" >>${.TARGET:Q}
+	@echo "export REPO_PACKAGES" >>${.TARGET:Q}
 	@echo "export REPO_HTTPD_ERR REPO_HTTPD_LOG" >>${.TARGET:Q}
 	@echo "sockopts=\"reuseaddr,fork,keepalive\"" >>${.TARGET:Q}
 	# Uses "exec" to ensure pid passed back via $! is correct.
