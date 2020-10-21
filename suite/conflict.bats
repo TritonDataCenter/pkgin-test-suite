@@ -9,6 +9,10 @@
 # The former we can correctly detect before install, but unfortunately the
 # latter cannot, so we simply test that the errors are correctly reported.
 #
+# XXX: Note that pkgin does not yet test whether a remote package CONFLICTS
+# matches any local packages, only whether a local package CONFLICTS matches
+# any incoming remote package.  This should be fixed!
+#
 
 SUITE="conflict"
 
@@ -25,7 +29,7 @@ setup_file()
 	create_pkg_comment "preserve-1.0" "Package should remain at all times"
 	create_pkg_file "preserve-1.0" "share/doc/preserve"
 	create_pkg_preserve "preserve-1.0"
-	create_pkg "preserve-1.0"
+	create_pkg "preserve-1.0" -C "conflict-pkg-[0-9]*"
 
 	create_pkg_buildinfo "conflict-pkg-1.0" \
 	    "BUILD_DATE=${BUILD_DATE}" \
@@ -33,7 +37,7 @@ setup_file()
 	    "PKGPATH=conflict/conflict-pkg"
 	create_pkg_comment "conflict-pkg-1.0" "Package conflicts (@pkgcfl)"
 	create_pkg_file "conflict-pkg-1.0" "share/doc/conflict-pkg"
-	create_pkg "conflict-pkg-1.0" -C "preserve-[0-9]*"
+	create_pkg "conflict-pkg-1.0"
 
 	create_pkg_buildinfo "conflict-plist-1.0" \
 	    "BUILD_DATE=${BUILD_DATE}" \
@@ -54,7 +58,6 @@ teardown_file()
 {
 	stop_httpd
 }
-
 @test "${SUITE} perform initial pkgin setup" {
         export PKG_PATH=${PACKAGES}/All
         run pkg_add preserve
@@ -67,15 +70,24 @@ teardown_file()
 #
 # Test @pkgcfl conflicts.
 #
+@test "${SUITE} attempt to not install @pkgcfl conflict package" {
+	if [ ${PKGIN_VERSION} -eq 200700 -o ${PKGIN_VERSION} -eq 200800 ]; then
+		skip "crashes due to NetBSDfr/pkgin#105"
+	fi
+	run pkgin -n install conflict-pkg
+	[ ${status} -eq 0 ]
+	output_match "conflict-pkg.* conflicts with installed package preserve"
+}
 @test "${SUITE} attempt to install @pkgcfl conflict package" {
 	run pkgin -y install conflict-pkg
 	[ ${status} -eq 1 ]
+	output_match "conflict-pkg.* conflicts with installed package preserve"
 	output_match "pkg_install warnings: 0, errors: 1"
 }
 @test "${SUITE} verify pkg_install-err.log (@pkgcfl)" {
 	run cat ${PKG_INSTALL_LOG}
 	[ ${status} -eq 0 ]
-	output_match "Package.*conflict-.*conflicts.*with.*preserve"
+	output_match "Installed package.*preserve.*conflicts.*with.*conflict-pkg"
 }
 #
 # Test PLIST conflicts.
