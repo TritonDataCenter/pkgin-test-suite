@@ -3,7 +3,7 @@
 # test files, located under the suite/ directory.
 #
 
-BATS?=		${.CURDIR}/bin/bats
+BATS?=		bin/bats
 PKGIN?=		pkgin
 
 SUITES+=	suite/categories.bats
