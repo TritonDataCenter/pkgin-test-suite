@@ -3,12 +3,19 @@
 This is the pkgin test suite.  The aim is to provide comprehensive coverage of
 all scenarios pkgin may face.
 
+The test suite uses the [Bash Automated Testing
+System](https://github.com/sstephenson/bats) for writing tests.  See the
+existing tests for examples of how to write them.  The most important thing to
+note is that each test must have a unique name, otherwise they will clash and
+only one of them will be executed.
+
 ## Requirements
 
 This test suite requires:
 
-* BSD make
+* make (GNU or BSD are supported)
 * socat (for the test httpd server)
+* GNU parallel (optional, for running multiple jobs in parallel)
 
 In order to test pkgin 0.9 or older, you will first need to apply the
 following three commits:
@@ -36,62 +43,46 @@ Currently tested to be clean are:
  * pkgin-0.15.0
  * pkgin-0.16.0
  * pkgin-0.16.1
- * pkgin-20.5.1
- * pkgin-20.7.0
- * pkgin-20.8.0
+ * pkgin-20.5.1 or newer
 
 ## Running
 
 ```console
-$ bmake                 # Pretty print output
-$ bmake bats-tap        # Standard tap output
+$ make                  # Pretty print output
+$ make bats-tap         # Standard tap output
 ```
 
-You can provide environment variables to alter which pkgin is used, where
-results are stored, etc.  The main variables you might want to change and their
-defaults are:
+You can provide environment variables to alter which pkgin is used, which bats
+is used, and how many jobs runners to execute (requires GNU parallel):
 
 ```
-SYSTEM_PKGIN=pkgin	# The pkgin binary to use
-TEST_WORKDIR=.work      # Where to store the work area
+PKGIN=pkgin             # The pkgin binary to use, default "pkgin"
+BATS=/path/to/bats      # The bats script to use, default "bin/bats"
+BATS_JOBS="-j 8"        # The number of test runners, default "-j 1"
 ```
-
-See the top section of the Makefile for others.
 
 ## Hacking
 
-The test suite is designed to run in sequence, with each area of tests having
-its own package repository and suite script.  The order is currently:
+The test suite is designed so that each test within each suite is run in
+sequence, with each suite having its own package repository and set of tests.
 
-1. suite/empty.sh - Test initialisation and command output
-2. suite/install.sh - Test installs
-3. suite/upgrade.sh - Test upgrades
-4. suite/conflict.sh - Test conflicts
-5. suite/invalid.sh - Test bad packages and invalid assumptions
-6. suite/file-dl.sh - Test file:// downloads
-7. suite/http-dl.sh - Test http:// downloads
+This allows suites to be tested in parallel, but retain correct ordering within
+each individual suite.
 
-Common to each test suite script are the header and footer files:
+The current test suites are:
 
-* suite/header.sh - Provide test script setup and common functions
-* suite/footer.sh - Perform test suite cleanup
+* [suite/categories.bats](suite/categories.bats): Test `show-category`, etc.
+* [suite/conflict.bats](suite/conflict.bats): Test `CONFLICTS`, etc.
+* [suite/empty.bats](suite/empty.bats): Verify usage against an empty repo.
+* [suite/file-dl.bats](suite/file-dl.bats): Download tests against `file:///`.
+* [suite/http-dl.bats](suite/http-dl.bats): Download tests against `http:///`.
+* [suite/install.bats](suite/install.bats): Various install tests.
+* [suite/invalid.bats](suite/invalid.bats): Invalid and exaggerated repo.
+* [suite/provreq.bats](suite/provreq.bats): Test `PROVIDES` and `REQUIRES`.
+* [suite/upgrade.bats](suite/upgrade.bats): Package upgrades.
 
-The exp/ directory contains expected output.  Per-version output is supported,
-and header.sh provides a few functions to compare the output in a variety of
-ways.
-
-The Makefile controls which packages are available for each repository, as well
-as providing ways of building packages specific for that repository.  The
-suite/ files then perform the actual tests.
-
-The pkgdb and pkgin database are left unmodified between runs, so that for
-example the upgrades suite can follow on from the previous installs.
-
-The test suite uses the [Bash Automated Testing
-System](https://github.com/sstephenson/bats) for writing tests.  See the
-existing tests for examples of how to write them.  The most important thing to
-note is that each test must have a unique name, otherwise they will clash and
-only one of them will be executed.
+Shared between each test suite script is [suite/common.bash](suite/common.bash)
+which sets up the environment and shared functions.
 
 ## TODO
 
