@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-if [[ -z "$TMPDIR" ]]; then
-	BATS_TMPDIR='/tmp'
+if [[ -z "${TMPDIR:-}" ]]; then
+	export BATS_TMPDIR='/tmp'
 else
-	BATS_TMPDIR="${TMPDIR%/}"
+	export BATS_TMPDIR="${TMPDIR%/}"
 fi
 
 BATS_TMPNAME="$BATS_RUN_TMPDIR/bats.$$"
@@ -16,16 +16,10 @@ bats_preprocess_source() {
 	# since the latter runs in bats-exec-test's bash while this runs in bats-exec-file's
 	export BATS_TEST_SOURCE="${BATS_TMPNAME}.src"
 	bats-preprocess "$BATS_TEST_FILENAME" >"$BATS_TEST_SOURCE"
-	trap 'bats_cleanup_preprocessed_source' ERR EXIT
-	trap 'bats_cleanup_preprocessed_source; exit 1' INT
-}
-
-bats_cleanup_preprocessed_source() {
-	rm -f "$BATS_TEST_SOURCE"
 }
 
 bats_evaluate_preprocessed_source() {
-	if [[ -z "$BATS_TEST_SOURCE" ]]; then
+	if [[ -z "${BATS_TEST_SOURCE:-}" ]]; then
 		BATS_TEST_SOURCE="${BATS_PARENT_TMPNAME}.src"
 	fi
 	# Dynamically loaded user files provided outside of Bats.

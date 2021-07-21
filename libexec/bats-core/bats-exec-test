@@ -80,9 +80,9 @@ bats_exit_trap() {
     fi
   fi
 
-  BATS_TEST_TIME=""
+  BATS_TEST_TIME=''
   if [[ -z "${skipped}" && -n "$BATS_ENABLE_TIMING" ]]; then
-    BATS_TEST_TIME=" in "$((SECONDS - BATS_TEST_START_TIME))"sec"
+    BATS_TEST_TIME=" in "$(( $(get_mills_since_epoch) - BATS_TEST_START_TIME ))"ms"
   fi
 
   if [[ -z "$BATS_TEST_COMPLETED" || -z "$BATS_TEARDOWN_COMPLETED" ]]; then
@@ -99,19 +99,19 @@ bats_exit_trap() {
       BATS_STACK_TRACE=("${BATS_CURRENT_STACK_TRACE[@]}")
       BATS_ERROR_STATUS=1
     fi
-    printf 'not ok %d %s\n' "$BATS_TEST_NUMBER" "${BATS_TEST_DESCRIPTION}${BATS_TEST_TIME}" >&3
+    printf 'not ok %d %s\n' "$BATS_SUITE_TEST_NUMBER" "${BATS_TEST_DESCRIPTION}${BATS_TEST_TIME}" >&3
     bats_print_stack_trace "${BATS_STACK_TRACE[@]}" >&3
     bats_print_failed_command >&3
 
     while IFS= read -r line; do
-      printf '# %s\n' "$line"
+      printf '# %s\n' "$line" || break # avoid feedback loop when errors are redirected into BATS_OUT (see #353)
     done <"$BATS_OUT" >&3
     if [[ -n "$line" ]]; then
       printf '# %s\n' "$line"
     fi
     status=1
   else
-    printf 'ok %d %s%s\n' "$BATS_TEST_NUMBER" "${BATS_TEST_DESCRIPTION}${BATS_TEST_TIME}" \
+    printf 'ok %d %s%s\n' "$BATS_SUITE_TEST_NUMBER" "${BATS_TEST_DESCRIPTION}${BATS_TEST_TIME}" \
       "$skipped" >&3
     status=0
   fi
@@ -120,9 +120,22 @@ bats_exit_trap() {
   exit "$status"
 }
 
+get_mills_since_epoch() {
+  local ms_since_epoch
+  ms_since_epoch=$(date +%s%N)
+  if [[ "$ms_since_epoch" == *N || "${#ms_since_epoch}" -lt 19 ]]; then
+        ms_since_epoch=$(( $(date +%s) * 1000 ))
+  else
+        ms_since_epoch=$(( ms_since_epoch / 1000000 ))
+  fi
+
+  printf "%d\n" "$ms_since_epoch"
+}
+
 bats_perform_test() {
-  BATS_TEST_NAME="$1"
-  BATS_TEST_NUMBER="$2"
+  export BATS_TEST_NAME="$1"
+  export BATS_SUITE_TEST_NUMBER="$2"
+  export BATS_TEST_NUMBER="$3"
 
   if ! declare -F "$BATS_TEST_NAME" &>/dev/null; then
     printf "bats: unknown test name \`%s'\n" "$BATS_TEST_NAME" >&2
@@ -148,11 +161,12 @@ bats_perform_test() {
   # mark this call as trap call
   trap 'bats_teardown_trap as-exit-trap' EXIT
 
+  BATS_TEST_START_TIME=$(get_mills_since_epoch)
   "$BATS_TEST_NAME" >>"$BATS_OUT" 2>&1
 
   BATS_TEST_COMPLETED=1
   trap 'bats_exit_trap' EXIT
-  bats_teardown_trap
+  bats_teardown_trap "" # pass empty parameter to signify call outside trap
 }
 
 # shellcheck source=lib/bats-core/preprocessing.bash

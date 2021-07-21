@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-export BATS_VERSION='1.2.1'
+export BATS_VERSION='1.3.0'
+VALID_FORMATTERS="pretty, junit, tap, tap13"
 
 version() {
   printf 'Bats %s\n' "$BATS_VERSION"
@@ -30,13 +31,17 @@ HELP_TEXT_HEADER
   -c, --count               Count test cases without running any tests
   -f, --filter <regex>      Only run tests that match the regular expression
   -F, --formatter <type>    Switch between formatters: pretty (default),
-                              tap (default w/o term), junit
+                              tap (default w/o term), tap13, junit
   -h, --help                Display this help message
   -j, --jobs <jobs>         Number of parallel jobs (requires GNU parallel)
-  --parallel-preserve-environment
-                            Preserve the current environment for "--jobs"
-                              (run `parallel --record-env` before)
   --no-tempdir-cleanup      Preserve test output temporary directory
+  --no-parallelize-across-files
+                            Serialize test file execution instead of running
+                            them in parallel (requires --jobs >1)
+  --no-parallelize-within-files
+                            Serialize test execution within files instead of
+                            running them in parallel (requires --jobs >1)
+  --report-formatter <type> Switch between reporters (same options as --formatter)
   -o, --output <dir>        Directory to write report files
   -p, --pretty              Shorthand for "--formatter pretty"
   -r, --recursive           Include tests in subdirectories
@@ -64,12 +69,14 @@ expand_path() {
 }
 
 BATS_LIBEXEC="$(dirname "$(bats_readlinkf "${BASH_SOURCE[0]}")")"
+export BATS_LIBEXEC
 export BATS_CWD="$PWD"
 export BATS_TEST_PATTERN="^[[:blank:]]*@test[[:blank:]]+(.*[^[:blank:]])[[:blank:]]+\{(.*)\$"
+export BATS_TEST_PATTERN_COMMENT="[[:blank:]]*([^[:blank:]()]+)[[:blank:]]*\(?\)?[[:blank:]]+\{[[:blank:]]+#[[:blank:]]*@test[[:blank:]]*\$"
 export BATS_TEST_FILTER=
 export PATH="$BATS_LIBEXEC:$PATH"
 export BATS_ROOT_PID=$$
-if [[ -z "$TMPDIR" ]]; then
+if [[ -z "${TMPDIR-}" ]]; then
   export BATS_TMPDIR="/tmp"
 else
   export BATS_TMPDIR="${TMPDIR%/}"
@@ -98,11 +105,12 @@ set -- "${arguments[@]}"
 arguments=()
 
 unset flags recursive formatter_flags
-flags=()
-formatter_flags=()
+flags=('--dummy-flag') # add a dummy flag to prevent unset varialeb errors on empty array expansion in old bash versions
+formatter_flags=('--dummy-flag') # add a dummy flag to prevent unset varialeb errors on empty array expansion in old bash versions
 formatter='tap'
+report_formatter=''
 recursive=
-tempdir_cleanup=1
+export BATS_TEMPDIR_CLEANUP=1
 output=
 if [[ -z "${CI:-}" && -t 0 && -t 1 ]] && command -v tput >/dev/null; then
   formatter='pretty'
@@ -128,10 +136,20 @@ while [[ "$#" -ne 0 ]]; do
     ;;
   -F | --formatter)
     shift
-    if [[ $1 =~ ^(pretty|junit|tap)$ ]]; then
+    # allow cat formatter to see extended output but don't advertise to users
+    if [[ $1 =~ ^(pretty|junit|tap|tap13|cat)$ ]]; then
       formatter="$1"
     else
-      printf "Unknown formatter '%s', valid options are pretty, junit, tap\n" "$1"
+      printf "Unknown formatter '%s', valid options are %s\n" "$1" "${VALID_FORMATTERS}"
+      exit 1
+    fi
+    ;;
+  --report-formatter)
+    shift
+    if [[ $1 =~ ^(pretty|junit|tap|tap13)$ ]]; then
+      report_formatter="$1"
+    else
+      printf "Unknown report formatter '%s', valid options are %s\n" "$1" "${VALID_FORMATTERS}"
       exit 1
     fi
     ;;
@@ -156,15 +174,21 @@ while [[ "$#" -ne 0 ]]; do
     flags+=('-T')
     formatter_flags+=('-T')
     ;;
+  # this flag is now a no-op, as it is the parallel default
   --parallel-preserve-environment)
-    flags+=("--parallel-preserve-environment")
-    # check if parallel's env setup was run before
-    # will print on stderr and return 255 on failure
-    # suppress stdout (on success)
-    parallel --env _ echo ::: 1 >/dev/null || exit 1
+    ;;
+  --no-parallelize-across-files)
+    flags+=("--no-parallelize-across-files")
+    ;;
+  --no-parallelize-within-files)
+    flags+=("--no-parallelize-within-files")
     ;;
   --no-tempdir-cleanup)
-    tempdir_cleanup=''
+    BATS_TEMPDIR_CLEANUP=''
+    ;;
+  --tempdir) # for internal test consumption only!
+    BATS_RUN_TMPDIR="$2"
+    shift
     ;;
   -*)
     abort "Bad command line option '$1'"
@@ -182,22 +206,53 @@ if [[ -d "$BATS_RUN_TMPDIR" ]]; then
   exit 1
 fi
 mkdir -p "$BATS_RUN_TMPDIR"
-if [[ -n "$tempdir_cleanup" ]]; then
+if [[ -n "$BATS_TEMPDIR_CLEANUP" ]]; then
   trap 'rm -rf "$BATS_RUN_TMPDIR"' ERR EXIT
 fi
 
 if [[ "$formatter" != "tap" ]]; then
   flags+=('-x')
 fi
+
+if [[ -n "$report_formatter" && "$report_formatter" != "tap" ]]; then
+  flags+=('-x')
+fi
+
 if [[ "$formatter" == "junit" ]]; then
   flags+=('-T')
-  formatter_flags+=('-T')
+  formatter_flags+=('--base-path' "${arguments[0]}")
+fi
+if [[ "$report_formatter" == "junit" ]]; then
+  flags+=('-T')
+  report_formatter_flags+=('--base-path' "${arguments[0]}")
+fi
+
+# if we don't need to filter extended syntax, use the faster formatter
+if [[ "$formatter" == tap && -z "$report_formatter" ]]; then
+  formatter="cat"
 fi
 
 if [[ "${#arguments[@]}" -eq 0 ]]; then
   abort 'Must specify at least one <test>'
 fi
 
+if [[ -n "$report_formatter" ]]; then
+  # default to the current directory for output
+  if [[ -z "$output" ]]; then
+    output=.
+  fi
+  case "$report_formatter" in
+    tap|tap13)
+      BATS_REPORT_FILE_NAME="report.tap"
+      ;;
+    junit)
+      BATS_REPORT_FILE_NAME="report.xml"
+      ;;
+    pretty)
+      BATS_REPORT_FILE_NAME="report.log"
+      ;;
+  esac
+fi
 
 if [[ -n "$output" ]]; then
   if [[ ! -w "${output}" ]]; then
@@ -215,9 +270,9 @@ for filename in "${arguments[@]}"; do
     if [[ "$recursive" -eq 1 ]]; then
       while IFS= read -r -d $'\0' file; do
         filenames+=("$file")
-      done < <(find "$filename" -type f -name '*.bats' -print0 | sort -z)
+      done < <(find -L "$filename" -type f -name "*.${BATS_FILE_EXTENSION:-bats}" -print0 | sort -z)
     else
-      for suite_filename in "$filename"/*.bats; do
+      for suite_filename in "$filename"/*."${BATS_FILE_EXTENSION:-bats}"; do
         filenames+=("$suite_filename")
       done
     fi
@@ -231,4 +286,9 @@ done
 source "$BATS_ROOT/lib/bats-core/validator.bash"
 
 set -o pipefail execfail
-exec bats-exec-suite "${flags[@]}" "${filenames[@]}" | bats_test_count_validator | "bats-format-${formatter}" "${formatter_flags[@]}"
+
+if [[ -n "$report_formatter" ]]; then
+  exec bats-exec-suite "${flags[@]}" "${filenames[@]}" | tee >("bats-format-${report_formatter}" "${report_formatter_flags[@]}" >"${BATS_REPORT_OUTPUT_PATH}/${BATS_REPORT_FILE_NAME}") | bats_test_count_validator | "bats-format-${formatter}" "${formatter_flags[@]}"
+else
+  exec bats-exec-suite "${flags[@]}" "${filenames[@]}" | bats_test_count_validator | "bats-format-${formatter}" "${formatter_flags[@]}"
+fi
