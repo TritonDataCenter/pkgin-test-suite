@@ -163,7 +163,7 @@ create_pkg_buildinfo()
 
 	echo "MACHINE_ARCH=$(bmake -V MACHINE_ARCH)" >>${build_info}
 	echo "OPSYS=$(uname -s)" >>${build_info}
-	echo "OS_VERSION=$(uname -r)" >>${build_info}
+	echo "OS_VERSION=$(uname -r | sed -e 's/-.*//')" >>${build_info}
 	echo "PKGTOOLS_VERSION=20091115" >>${build_info}
 
 	for arg; do
