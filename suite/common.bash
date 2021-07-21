@@ -32,7 +32,7 @@ fi
 : ${PKG_INSTALL_LOG:=${PKGIN_DBDIR}/pkg_install-err.log} # pkg_* output log
 : ${PKGIN_SQL_LOG:=${PKGIN_DBDIR}/sql.log}		# pkgin sql error log
 
-: ${HTTPD_PORT:=57191}					# Default HTTP port
+: ${HTTPD_PORT:=$((8192 + (RANDOM % (65535 - 8192))))}}	# Default HTTP port
 : ${HTTPD_ERR:=${SUITE_WORKDIR}/httpd.err}		# httpd error file
 : ${HTTPD_LOG:=${SUITE_WORKDIR}/httpd.log}		# httpd log file
 : ${HTTPD_PID:=${SUITE_WORKDIR}/httpd.pid}		# httpd pid file
@@ -40,6 +40,13 @@ fi
 : ${PKG_REPOS=http://127.0.0.1:${HTTPD_PORT}}
 
 export PKGIN PKGIN_DBDIR PKG_DBDIR PKG_INSTALL_DIR PKG_REPOS PACKAGES
+
+#
+# Parallel test runs are only supported across test suites.  Individual tests
+# within each test suite cannot be run parallel, at least in the vast majority
+# of cases, as they depend on state left by previous tests.
+#
+export BATS_NO_PARALLELIZE_WITHIN_FILE=true
 
 #
 # Sanity check variable to ensure that any wrapper scripts are being called

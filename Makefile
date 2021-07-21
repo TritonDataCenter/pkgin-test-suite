@@ -4,6 +4,7 @@
 #
 
 BATS?=		bin/bats
+BATS_JOBS?=	-j 1
 PKGIN?=		pkgin
 
 SUITES+=	suite/categories.bats
@@ -28,12 +29,12 @@ tap: bats-tap
 .PHONY: bats-test
 bats-test:
 	@echo '=> Running test suite with PKGIN=${PKGIN}'
-	@PKGIN=${PKGIN} ${BATS} ${SUITES}
+	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} ${SUITES}
 
 .PHONY: bats-tap
 bats-tap: ${BATS_TESTS}
 	@echo '=> Running test suite with PKGIN=${PKGIN} (tap output)'
-	@PKGIN=${PKGIN} ${BATS} --tap ${SUITES}
+	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} --tap ${SUITES}
 
 #
 # Helpful debug targets.
