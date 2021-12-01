@@ -31,6 +31,16 @@ setup_file()
 	    "/^FILE_SIZE/s/=.*/=987654321987654321/"
 	create_pkg "badfilesize-1.0"
 
+	create_pkg_buildinfo "nofilesize-1.0" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=invalid" \
+	    "PKGPATH=invalid/nofilesize"
+	create_pkg_comment "nofilesize-1.0" "Package has no FILE_SIZE"
+	create_pkg_file "nofilesize-1.0" "share/doc/nofilesize"
+	create_pkg_filter "nofilesize-1.0" \
+	    "/^FILE_SIZE/d"
+	create_pkg "nofilesize-1.0"
+
 	create_pkg_buildinfo "badsizepkg-1.0" \
 	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=invalid" \
@@ -75,6 +85,14 @@ teardown_file()
 	[ ${status} -eq 1 ]
 	output_match "does not have enough space for download"
 }
+
+@test "${SUITE} test no FILE_SIZE" {
+	skip_if_version -lt 211200 "known crash"
+	run pkgin -y install nofilesize
+	[ ${status} -eq 1 ]
+	output_match "nofilesize is not available in the repository"
+}
+
 @test "${SUITE} test massive SIZE_PKG" {
 	run pkgin -y install badsizepkg
 	[ ${status} -eq 1 ]
