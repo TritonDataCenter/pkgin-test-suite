@@ -26,13 +26,20 @@ SUITES+=	suite/upgrade.bats
 all check test: bats-test
 tap: bats-tap
 
+.PHONY: check-deps
+check-deps:
+	@if ! command -v socat; then \
+		echo "socat is required to run the test suite"; \
+		false; \
+	fi
+
 .PHONY: bats-test
-bats-test:
+bats-test: check-deps
 	@echo '=> Running test suite with PKGIN=${PKGIN}'
 	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} ${SUITES}
 
 .PHONY: bats-tap
-bats-tap: ${BATS_TESTS}
+bats-tap: check-deps
 	@echo '=> Running test suite with PKGIN=${PKGIN} (tap output)'
 	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} --tap ${SUITES}
 
