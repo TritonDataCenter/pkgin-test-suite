@@ -1,2 +1,2 @@
-deptree-bottom-1.0 is marked as autoremovable
-deptree-middle-1.0 is marked as autoremovable
+deptree-bottom-1.0   Package is at the bottom of a dependency tree
+deptree-middle-1.0   Package is in the middle of a dependency tree

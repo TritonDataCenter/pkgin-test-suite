@@ -1,4 +1,4 @@
-deptree-top-2.0 is marked as non-autoremovable
-pkgpath-1.0 is marked as non-autoremovable
-refresh-1.0 is marked as non-autoremovable
-upgrade-2.0 is marked as non-autoremovable
+deptree-top-2.0      Package is at the top of a dependency tree
+pkgpath-1.0          PKGPATH differs to pkgpath-2.0
+refresh-1.0          Package should be refreshed
+upgrade-2.0          Package should be upgraded

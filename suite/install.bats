@@ -292,14 +292,22 @@ teardown_file()
 	for cmd in show-keep sk; do
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
-		compare_output "pkgin.show-keep"
+		if [ ${PKGIN_VERSION} -le 211201 ]; then
+			compare_output "21.12.1" "pkgin.show-keep"
+		else
+			compare_output "pkgin.show-keep"
+		fi
 	done
 }
 @test "${SUITE} verify pkgin show-no-keep" {
 	for cmd in show-no-keep snk; do
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
-		compare_output "pkgin.show-no-keep"
+		if [ ${PKGIN_VERSION} -le 211201 ]; then
+			compare_output "21.12.1" "pkgin.show-no-keep"
+		else
+			compare_output "pkgin.show-no-keep"
+		fi
 	done
 }
 @test "${SUITE} verify pkgin show-deps" {
