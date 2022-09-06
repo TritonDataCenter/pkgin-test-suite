@@ -281,6 +281,8 @@ teardown_file() {
 		compare_output "0.12" "pkgin.usage"
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
 		compare_output "20.5.1" "pkgin.usage"
+	elif [ ${PKGIN_VERSION} -le 211200 ]; then
+		compare_output "21.12.0" "pkgin.usage"
 	else
 		compare_output "pkgin.usage"
 	fi
