@@ -1,25 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# shellcheck source=lib/bats-core/formatter.bash
+source "$BATS_ROOT/lib/bats-core/formatter.bash"
+
 BASE_PATH=.
 
 while [[ "$#" -ne 0 ]]; do
   case "$1" in
-    --base-path)
-      shift
-      # the relative path root to use for reporting filenames
-      # this is mainly intended for suite mode, where this will be the suite root folder
-      BASE_PATH="$1"
-      # use the containing directory when --base-path is a file
-      if [[ ! -d "$BASE_PATH" ]]; then
-        BASE_PATH="$(dirname "$BASE_PATH")"
-      fi
-      # get the absolute path
-      BASE_PATH="$(cd "$BASE_PATH"; pwd)"
-      # ensure the path ends with / to strip that later on
-      if [[ "${BASE_PATH}" != *"/" ]]; then
-        BASE_PATH="$BASE_PATH/"
-      fi
+  --base-path)
+    shift
+    normalize_base_path BASE_PATH "$1"
     ;;
   esac
   shift
@@ -27,7 +18,7 @@ done
 
 init_suite() {
   suite_test_exec_time=0
-  # since we have to print the suite header before its contents but we don't know the contents before the header, 
+  # since we have to print the suite header before its contents but we don't know the contents before the header,
   # we have to buffer the contents
   _suite_buffer=""
   test_result_state="" # declare for the first flush, when no test has been encountered
@@ -40,6 +31,7 @@ init_file() {
   file_skipped=0
   file_exec_time=0
   test_exec_time=0
+  name=""
   _buffer=""
   _buffer_log=""
   _system_out_log=""
@@ -75,7 +67,7 @@ suite_header() {
 file_header() {
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
   printf "<testsuite name=\"%s\" tests=\"%s\" failures=\"%s\" errors=\"0\" skipped=\"%s\" time=\"%s\" timestamp=\"%s\" hostname=\"%s\">\n" \
-                     "$(xml_escape "${class}")" "${file_count}" "${file_failures}" "${file_skipped}" "$(milliseconds_to_seconds "${file_exec_time}")" "${timestamp}" "$(host)"
+    "$(xml_escape "${class}")" "${file_count}" "${file_failures}" "${file_skipped}" "$(milliseconds_to_seconds "${file_exec_time}")" "${timestamp}" "$(host)"
 }
 
 file_footer() {
@@ -106,19 +98,22 @@ print_test_case() {
 }
 
 xml_escape() {
-  output=${1//&/&amp;}
-  output=${output//</&lt;}
-  output=${output//>/&gt;}
-  output=${output//'"'/&quot;}
-  output=${output//\'/&#39;}
+  output=${1//&/\&amp;}
+  output=${output//</\&lt;}
+  output=${output//>/\&gt;}
+  output=${output//'"'/\&quot;}
+  output=${output//\'/\&#39;}
   local CONTROL_CHAR=$'\033'
-  output="${output//$CONTROL_CHAR/&#27;}"
+  output=${output//$CONTROL_CHAR/\&#27;}
   printf "%s" "$output"
 }
 
 suite_buffer() {
   local output
-  output="$("$@"; printf "x")" # use x marker to avoid losing trailing newlines
+  output="$(
+    "$@"
+    printf "x"
+  )" # use x marker to avoid losing trailing newlines
   _suite_buffer="${_suite_buffer}${output%x}"
 }
 
@@ -129,7 +124,10 @@ suite_flush() {
 
 buffer() {
   local output
-  output="$("$@"; printf "x")" # use x marker to avoid losing trailing newlines
+  output="$(
+    "$@"
+    printf "x"
+  )" # use x marker to avoid losing trailing newlines
   _buffer="${_buffer}${output%x}"
 }
 
@@ -180,15 +178,13 @@ finish_suite() {
   suite_footer
 }
 
-# shellcheck source=lib/bats-core/formatter.bash
-source "$BATS_ROOT/lib/bats-core/formatter.bash"
-
 bats_tap_stream_plan() { #  <number of tests>
   :
 }
 
 init_suite
 trap finish_suite EXIT
+trap '' INT
 
 bats_tap_stream_begin() { # <test index> <test name>
   flush_log
@@ -196,12 +192,8 @@ bats_tap_stream_begin() { # <test index> <test name>
   name="$2"
 }
 
-bats_tap_stream_ok() { # [--duration <milliseconds] <test index> <test name>
-  if [[ "$1" == "--duration" ]]; then
-    test_exec_time="${BASH_REMATCH[1]}"
-  else
-    test_exec_time=0
-  fi
+bats_tap_stream_ok() { # <test index> <test name>
+  test_exec_time=${BATS_FORMATTER_TEST_DURATION:-0}
   ((file_count += 1))
   test_result_state='ok'
   file_exec_time="$((file_exec_time + test_exec_time))"
@@ -209,6 +201,7 @@ bats_tap_stream_ok() { # [--duration <milliseconds] <test index> <test name>
 }
 
 bats_tap_stream_skipped() { # <test index> <test name> <skip reason>
+  test_exec_time=${BATS_FORMATTER_TEST_DURATION:-0}
   ((file_count += 1))
   ((file_skipped += 1))
   test_result_state='skipped'
@@ -216,34 +209,38 @@ bats_tap_stream_skipped() { # <test index> <test name> <skip reason>
   test_skip_message="$3"
 }
 
-bats_tap_stream_not_ok() { # [--duration <milliseconds>] <test index> <test name>
+bats_tap_stream_not_ok() { # <test index> <test name>
+  test_exec_time=${BATS_FORMATTER_TEST_DURATION:-0}
   ((file_count += 1))
   ((file_failures += 1))
-  if [[ "$1" == "--duration" ]]; then
-    test_exec_time="${BASH_REMATCH[1]}"
-  else
-    test_exec_time=0
-  fi
   test_result_state=not_ok
   file_exec_time="$((file_exec_time + test_exec_time))"
   suite_test_exec_time=$((suite_test_exec_time + test_exec_time))
 }
 
 bats_tap_stream_comment() { # <comment text without leading '# '> <scope>
-  if [[ "$2" == begin ]]; then
+  local comment="$1" scope="$2"
+  case "$scope" in
+  begin)
     # everything that happens between begin and [not] ok is FD3 output from the test
-    log_system_out "$1"
-  else
+    log_system_out "$comment"
+    ;;
+  ok)
+    # non failed tests can produce FD3 output
+    log_system_out "$comment"
+    ;;
+  *)
     # everything else is considered error output
     log "$1"
-  fi
+    ;;
+  esac
 }
 
 bats_tap_stream_suite() { # <file name>
   flush_log
   suite_buffer finish_file
   init_file
-  class="$(remove_prefix "$BASE_PATH" "$1")"
+  class="${1/$BASE_PATH/}"
 }
 
 bats_tap_stream_unknown() { # <full line>
