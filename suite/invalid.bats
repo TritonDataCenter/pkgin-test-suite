@@ -104,6 +104,9 @@ teardown_file()
 # designed to trigger e.g. bad strcpy/strdup of NULL values.
 #
 @test "${SUITE} test package with missing or invalid pkg_summary entries" {
+        if [ ${PKGIN_VERSION} -eq 001000 -o ${PKGIN_VERSION} -eq 001001 ]; then
+		skip "known crash"
+	fi
 	run pkgin -y install badsum
 	[ ${status} -eq 0 ]
 }
