@@ -21,6 +21,14 @@ teardown_file() {
 	stop_httpd
 }
 
+# pkgin 0.8.0 and earlier need "-y" to get past "Database needs to be updated"
+# prompts which happen every time with an empty database.
+if [ ${PKGIN_VERSION} -lt 000900 ]; then
+	yflag="-y"
+else
+	yflag=
+fi
+
 #
 # Perform the initial update and database creation.  The initial pkgin update
 # should log SQL errors as the database will not exist, so also verify that the
@@ -42,17 +50,17 @@ teardown_file() {
 # tests are being ran, and pkg_summary compression may change, so use
 # simple output matches rather than a static file here.
 #
-# We also need to handle 0.9.4 differently as it does not initialise an
-# empty database correctly so we only get "downloading pkg_summary.gz"
+# We also need to handle 0.9.4 and earlier differently as they do not
+# initialise an empty database correctly, so we only get downloading messages
 # for this as well as subsequent updates.
 #
 @test "${SUITE} test initial pkgin update" {
-	run pkgin update
+	run pkgin ${yflag} update
 	echo $output
 	[ ${status} -eq 0 ]
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		line_match 0 "download started."
-		line_match 1 "download ended."
+		output_match "download started."
+		output_match "download ended."
 	else
 		line_match 0 "processing remote summary"
 		line_match 1 "downloading pkg_summary"
@@ -68,12 +76,12 @@ teardown_file() {
 # alias while here.
 #
 @test "${SUITE} test subsequent pkgin update" {
-	run pkgin up
+	run pkgin ${yflag} update
 	echo $output
 	[ ${status} -eq 0 ]
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		line_match 0 "download started."
-		line_match 1 "download ended."
+		output_match "download started."
+		output_match "download ended."
 	else
 		line_match 0 "processing remote summary"
 		line_match 1 "database.*is.up-to-date"
@@ -89,30 +97,29 @@ teardown_file() {
 #
 @test "${SUITE} test pkgin list" {
 	for cmd in list ls; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
 		line_match 0 "Requested list is empty."
 	done
 }
 @test "${SUITE} test pkgin avail" {
 	for cmd in avail av; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
 		line_match 0 "Requested list is empty."
 	done
 }
 @test "${SUITE} test pkgin search (no arguments)" {
 	for cmd in search se; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
-		# pkgin-0.9.4 includes the version
 		line_match 0 "pkgin.*: missing search string"
 	done
 }
 @test "${SUITE} test pkgin search (missing package)" {
 	for cmd in search se; do
-		run pkgin ${cmd} pkg-does-not-exist
-		# 0.9.4 is broken here
+		run pkgin ${yflag} ${cmd} pkg-does-not-exist
+		# 0.9.4 and earlier are broken here
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			[ ${status} -eq 0 ]
 		else
@@ -123,21 +130,21 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin upgrade" {
 	for cmd in upgrade ug; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
 		output_match "empty non-autoremovable package list"
 	done
 }
 @test "${SUITE} test pkgin full-upgrade" {
 	for cmd in full-upgrade fug; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
 		output_match "empty non-autoremovable package list"
 	done
 }
 @test "${SUITE} test pkgin install" {
 	for cmd in install in; do
-		run pkgin ${cmd} pkg-does-not-exist
+		run pkgin ${yflag} ${cmd} pkg-does-not-exist
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "empty available packages list"
@@ -145,13 +152,13 @@ teardown_file() {
 			line_match 0 "empty available packages list"
 			line_match 1 "nothing to do."
 		else
-			output_match "empty available packages list"
+			[ "${output}" = "empty available packages list" ]
 		fi
 	done
 }
 @test "${SUITE} test pkgin remove" {
 	for cmd in remove rm; do
-		run pkgin ${cmd} pkg-does-not-exist
+		run pkgin ${yflag} ${cmd} pkg-does-not-exist
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "pkgin.*: empty local package list."
@@ -162,7 +169,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin autoremove" {
 	for cmd in autoremove ar; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
 		# installed with pkgin (0.9) | marked as keepable (0.10+)
 		output_match "no packages have been installed|marked"
@@ -170,7 +177,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin show-keep" {
 	for cmd in show-keep sk; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "empty non-autoremovable package list"
@@ -181,7 +188,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin show-no-keep" {
 	for cmd in show-no-keep snk; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "empty autoremovable package list"
@@ -192,7 +199,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin export" {
 	for cmd in export ex; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "pkgin.*: empty local package list."
@@ -203,14 +210,14 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin show-category" {
 	for cmd in show-category sc; do
-		run pkgin ${cmd} category-does-not-exist
+		run pkgin ${yflag} ${cmd} category-does-not-exist
 		[ ${status} -eq 0 ]
 	done
 }
 @test "${SUITE} test pkgin show-pkg-category" {
 	for cmd in show-pkg-category spc; do
-		run pkgin ${cmd} pkg-does-not-exist
-		# 0.9.4 is broken here
+		run pkgin ${yflag} ${cmd} pkg-does-not-exist
+		# 0.9.4 and earlier are broken here
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			[ ${status} -eq 0 ]
 		else
@@ -220,7 +227,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin show-all-categories" {
 	for cmd in show-all-categories sac; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "No categories found."
@@ -231,7 +238,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin pkg-* commands (no arguments)" {
 	for cmd in pkg-content pc pkg-descr pd pkg-build-defs pbd; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
 		if [ ${PKGIN_VERSION} -lt 001000 ]; then
 			output_match "pkgin.*: missing package name"
@@ -242,7 +249,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin pkg-* commands (missing package)" {
 	for cmd in pkg-content pc pkg-descr pd pkg-build-defs pbd; do
-		run pkgin ${cmd} pkg-does-not-exist
+		run pkgin ${yflag} ${cmd} pkg-does-not-exist
 		[ ${status} -eq 1 ]
 		# The "." here is deliberate, "on" (older) vs "in".
 		output_match "is not available .n the repository"
@@ -250,7 +257,7 @@ teardown_file() {
 }
 @test "${SUITE} test pkgin clean" {
 	for cmd in clean cl; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -ge 001000 ]; then
 			[ -z "${output}" ]
@@ -262,21 +269,21 @@ teardown_file() {
 	skip_if_version -lt 001000 "known fail"
 
 	for cmd in stats st; do
-		run pkgin ${cmd}
+		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
 		compare_output "pkgin.stats"
 	done
 }
 @test "${SUITE} test pkgin usage (invalid command)" {
 	# Invalid command
-	run pkgin ojnk
+	run pkgin ${yflag} ojnk
 	[ ${status} -eq 1 ]
+
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		# pkgin 0.9.4 doesn't call setprogname()
-		line_match 0 "Usage: pkgin.*"
-		line_match 1 "Commands and shortcuts."
-		line_match 2 "list.*"
-		line_match 29 "stats.*"
+		output_match "Usage: pkgin.*"
+		output_match "Commands and shortcuts."
+		output_match "list.*"
+		output_match "stats.*"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
@@ -291,12 +298,12 @@ teardown_file() {
 @test "${SUITE} test pkgin usage (no command)" {
 	run pkgin
 	[ ${status} -eq 1 ]
+
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		# pkgin 0.9.4 doesn't call setprogname()
-		line_match 0 "Usage: pkgin.*"
-		line_match 1 "Commands and shortcuts."
-		line_match 2 "list.*"
-		line_match 29 "stats.*"
+		output_match "Usage: pkgin.*"
+		output_match "Commands and shortcuts."
+		output_match "list.*"
+		output_match "stats.*"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
@@ -312,13 +319,8 @@ teardown_file() {
 	skip_if_version -lt 001000
 	run pkgin -h
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		# pkgin 0.9.4 doesn't call setprogname()
-		line_match 0 "Usage: pkgin.*"
-		line_match 1 "Commands and shortcuts."
-		line_match 2 "list.*"
-		line_match 29 "stats.*"
-	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+
+	if [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
 		compare_output "20.5.1" "pkgin.usage"
