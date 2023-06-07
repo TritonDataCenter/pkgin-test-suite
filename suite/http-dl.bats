@@ -99,10 +99,10 @@ teardown_file()
 @test "${SUITE} test download-only" {
 	run pkgin -dy install download-ok
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "download-only.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "download-only.regex"
+
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "1 package.* to"
+		output_match ".*download-ok-1.0"
 	else
 		file_match "download-only.regex"
 	fi
@@ -120,13 +120,10 @@ teardown_file()
 @test "${SUITE} test install of already-downloaded package" {
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "install-downloaded.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "install-downloaded.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# pkgin 0.16.0 is just broken with output differences
-		:
+
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "1 package.* to"
+		output_match ".*download-ok-1.0"
 	else
 		file_match "install-downloaded.regex"
 	fi
@@ -159,13 +156,12 @@ teardown_file()
 
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "download-install.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "download-install.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# pkgin 0.16.0 is just broken with output differences
-		:
+
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "1 package.* to .* install"
+		output_match "download-ok-1.0"
+		output_match "pkg_install warnings: 0, errors: 0"
+		output_match "marking download-ok-1.0 as non auto-removable"
 	else
 		file_match "download-install.regex"
 	fi
@@ -178,18 +174,15 @@ teardown_file()
 # These tests all rely on our fake httpd to amend the packages in transit
 # even though they exist fine in the repository.
 #
-# pkgin-0.9.4 differs in some of the output, hence not supporting file_match
-#
 @test "${SUITE} test failed download (not found)" {
 	run pkgin -y install download-notfound
 	[ ${status} -eq 1 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "download-notfound.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "download-notfound.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# pkgin 0.16.0 is just broken with output differences
-		:
+
+	if [ ${PKGIN_VERSION} -lt 000900 ]; then
+		output_match "download-notfound-1.0 is not available"
+	elif [ ${PKGIN_VERSION} -lt 001101 -o \
+	       ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "Not Found"
 	else
 		file_match "download-notfound.regex"
 	fi
@@ -200,13 +193,14 @@ teardown_file()
 @test "${SUITE} test failed download (truncated)" {
 	run pkgin -y install download-truncate
 	[ ${status} -eq 1 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "download-truncate.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "download-truncate.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# pkgin 0.16.0 is just broken with output differences
-		:
+
+	if [ ${PKGIN_VERSION} -lt 000900 ]; then
+		output_match "truncated file"
+	elif [ ${PKGIN_VERSION} -lt 001000 ]; then
+		output_match "download-truncate-1.0 is not available"
+	elif [ ${PKGIN_VERSION} -lt 001101 -o \
+	       ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "download error: .* truncated"
 	else
 		file_match "download-truncate.regex"
 	fi
@@ -217,13 +211,14 @@ teardown_file()
 @test "${SUITE} test failed download (mismatch)" {
 	run pkgin -y install download-mismatch
 	[ ${status} -eq 1 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "download-mismatch.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "download-mismatch.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# pkgin 0.16.0 is just broken with output differences
-		:
+
+	if [ ${PKGIN_VERSION} -lt 000900 ]; then
+		output_match "pkg_install warnings: 0, errors: 1"
+	elif [ ${PKGIN_VERSION} -lt 001000 ]; then
+		output_match "pkgin.*: download mismatch"
+	elif [ ${PKGIN_VERSION} -lt 001101 -o \
+	       ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "download error: .* does not match pkg_summary"
 	else
 		file_match "download-mismatch.regex"
 	fi
@@ -239,13 +234,17 @@ teardown_file()
 	run pkgin -y install download-notfound download-truncate \
 			     download-mismatch
 	[ ${status} -eq 1 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "download-all-failed.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "download-all-failed.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# pkgin 0.16.0 is just broken with output differences
-		:
+
+	if [ ${PKGIN_VERSION} -lt 000900 ]; then
+		output_match "download-notfound-1.0 is not available"
+		output_match "truncated file"
+	elif [ ${PKGIN_VERSION} -lt 001000 ]; then
+		output_match "Not Found"
+	elif [ ${PKGIN_VERSION} -lt 001101 -o \
+	       ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "Not Found"
+		output_match "download error: .* truncated"
+		output_match "download error: .* does not match pkg_summary"
 	else
 		file_match "download-all-failed.regex"
 	fi

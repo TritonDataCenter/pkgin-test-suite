@@ -1,6 +1,0 @@
-pkgin.*: http://.*/download-notfound-1.0.tgz: Not Found
-calculating dependencies... done.
-nothing to upgrade.
-1 package.* to be installed .[0-9]+[BK] to download, 22B to install.:
-download-notfound-1.0
-downloading packages...
