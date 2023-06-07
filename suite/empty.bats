@@ -56,7 +56,6 @@ fi
 #
 @test "${SUITE} test initial pkgin update" {
 	run pkgin ${yflag} update
-	echo $output
 	[ ${status} -eq 0 ]
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "download started."
@@ -77,7 +76,6 @@ fi
 #
 @test "${SUITE} test subsequent pkgin update" {
 	run pkgin ${yflag} update
-	echo $output
 	[ ${status} -eq 0 ]
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "download started."
