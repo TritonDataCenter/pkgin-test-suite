@@ -77,6 +77,23 @@ teardown_file()
 }
 
 #
+# Support for -4/-6 and passing -V down to libfetch were introduced in the
+# same release.  For now just ensure that -4 works and -6 (expected) fails.
+#
+@test "${SUITE} test IPv4/IPv6 flags" {
+	skip_if_version -lt 220900 "does not support -4 or -6"
+
+	# Supply arguments multiple times to verify we're not overflowing
+	# fetchflags.
+	run pkgin -444fVVVy update
+	[ ${status} -eq 0 ]
+
+	# socat is currently hardcoded to IPv4, this should fail.
+	run pkgin -666fVVVy update
+	[ ${status} -eq 1 ]
+}
+
+#
 # Test a successful file download.  Do not install.
 #
 @test "${SUITE} test download-only" {

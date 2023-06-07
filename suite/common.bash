@@ -37,7 +37,7 @@ fi
 : ${HTTPD_LOG:=${SUITE_WORKDIR}/httpd.log}		# httpd log file
 : ${HTTPD_PID:=${SUITE_WORKDIR}/httpd.pid}		# httpd pid file
 
-: ${PKG_REPOS=http://127.0.0.1:${HTTPD_PORT}}
+: ${PKG_REPOS=http://localhost:${HTTPD_PORT}}
 
 export PKGIN PKGIN_DBDIR PKG_DBDIR PKG_INSTALL_DIR PKG_REPOS PACKAGES
 
