@@ -86,10 +86,10 @@ setup_file()
 	run pkgin -dy install download-ok
 	[ ${status} -eq 0 ]
 
-	# The output changed in 0.11.0 to be cleaner, for older releases just
+	# The output changed in 0.11.1 to be cleaner, for older releases just
 	# look for important matches.  pkgin 0.16.0 was broken and included
 	# pkg_admin stdout so only use simple matches for that too.
-	if [ ${PKGIN_VERSION} -le 001100 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "1 package.* to .* download"
 		output_match "download-ok-1.0"
 	else
@@ -110,10 +110,10 @@ setup_file()
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
 
-	# The output changed in 0.11.0 to be cleaner, for older releases just
+	# The output changed in 0.11.1 to be cleaner, for older releases just
 	# look for important matches.  pkgin 0.16.0 was broken and included
 	# pkg_admin stdout so only use simple matches for that too.
-	if [ ${PKGIN_VERSION} -le 001100 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "1 package.* to .* install"
 		output_match "installing download-ok-1.0"
 		output_match "marking download-ok-1.0 as non auto-removable"
@@ -150,10 +150,10 @@ setup_file()
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
 
-	# The output changed in 0.11.0 to be cleaner, for older releases just
+	# The output changed in 0.11.1 to be cleaner, for older releases just
 	# look for important matches.  pkgin 0.16.0 was broken and included
 	# pkg_admin stdout so only use simple matches for that too.
-	if [ ${PKGIN_VERSION} -le 001100 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "1 package.* to .* install"
 		output_match "installing download-ok-1.0"
 		output_match "pkg_install warnings: 0, errors: 0"
@@ -179,10 +179,10 @@ setup_file()
 	run pkgin -y install download-notfound
 	[ ${status} -eq 1 ]
 
-	# The output changed in 0.11.0 to be cleaner, for older releases just
+	# The output changed in 0.11.1 to be cleaner, for older releases just
 	# look for important matches.  pkgin 0.16.0 was broken and included
 	# pkg_admin stdout so only use simple matches for that too.
-	if [ ${PKGIN_VERSION} -le 001100 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "download-notfound-1.0 is not available"
 		output_match "1 package.* to .* install"
 		output_match "download-notfound-1.0"
@@ -214,10 +214,10 @@ setup_file()
 	run pkgin -y install download-mismatch
 	[ ${status} -eq 1 ]
 
-	# The output changed in 0.11.0 to be cleaner, for older releases just
+	# The output changed in 0.11.1 to be cleaner, for older releases just
 	# look for important matches.  pkgin 0.16.0 was broken and included
 	# pkg_admin stdout so only use simple matches for that too.
-	if [ ${PKGIN_VERSION} -le 001100 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "download error: download-mismatch-1.0 size does not match pkg_summary"
 		output_match "1 package.* to .* install"
 		output_match "download-mismatch-1.0"
