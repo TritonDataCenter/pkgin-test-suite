@@ -121,8 +121,6 @@ teardown_file()
 # Start with an existing pkg_add installation, to ensure we correctly pick up
 # existing local packages and do not try to perform the install.
 #
-# This doesn't work correctly pre-0.10 so just skip for 0.9.
-#
 @test "${SUITE} install first package using pkg_add" {
 	export PKG_PATH=${PACKAGES}/All
 	run pkg_add preserve
@@ -133,18 +131,26 @@ teardown_file()
 	compare_pkg_info "pkg_info.start"
 }
 @test "${SUITE} test pkgin install against existing installation" {
-	skip_if_version -lt 001000
 	run pkgin -y install preserve
 	[ ${status} -eq 0 ]
-	file_match "install-against-existing.regex"
+
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		output_match "nothing to do"
+	else
+		file_match "install-against-existing.regex"
+	fi
 }
 @test "${SUITE} verify PKG_INSTALL_LOG is missing" {
 	run [ ! -f ${PKG_INSTALL_LOG} ]
 	[ ${status} -eq 0 ]
 }
 @test "${SUITE} verify pkgin list against existing installation" {
-	skip_if_version -lt 001000
-	compare_pkgin_list "pkgin-list.start"
+	if [ ${PKGIN_VERSION} -eq 000700 -o ${PKGIN_VERSION} -eq 000800 ]; then
+		# parseable output in test output instead of normal
+		compare_pkg_info "pkg_info.start"
+	else
+		compare_pkgin_list "pkgin-list.start"
+	fi
 }
 
 #
@@ -162,8 +168,11 @@ teardown_file()
 	[ -z "${output}" ]
 }
 @test "${SUITE} test pkgin install against empty installation" {
-	# Pre-0.10 doesn't work against an empty installation, so we need to
-	# give it a helping hand.
+	#
+	# pkgin earlier than 0.10.0 does not work against an empty install,
+	# but we need the package installed for later tests, even though this
+	# defeats the point of this test.
+	#
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		export PKG_PATH=${PACKAGES}/All
 		run pkg_add preserve
@@ -173,21 +182,28 @@ teardown_file()
 		run pkgin -fy up
 		[ ${status} -eq 0 ]
 	fi
+
 	run pkgin -y install preserve
 	[ ${status} -eq 0 ]
+
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "install-against-empty.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "install-against-empty.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# 0.16.0 had double warn log output, just ignore, 0.16.1 fixed
-		:
+		output_match "nothing to do"
+	elif [ ${PKGIN_VERSION} -lt 001100 -o \
+	       ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "1 package.* install"
+		output_match "installing preserve-1.0"
+		output_match "pkg_install warnings: 0, errors: 0"
 	else
 		file_match "install-against-empty.regex"
 	fi
 }
 @test "${SUITE} verify pkgin list against empty installation" {
-	compare_pkgin_list "pkgin-list.start"
+	if [ ${PKGIN_VERSION} -eq 000700 -o ${PKGIN_VERSION} -eq 000800 ]; then
+		# parseable output in test output instead of normal
+		compare_pkg_info "pkg_info.start"
+	else
+		compare_pkgin_list "pkgin-list.start"
+	fi
 }
 
 #
@@ -195,19 +211,30 @@ teardown_file()
 # of the remote database is performed correctly.
 #
 @test "${SUITE} install remaining packages" {
-	run pkgin -fy install pkgpath-1.0 deptree-top-1.0
-	[ ${status} -eq 0 ]
-	# The output order here is nondeterministic.
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match -I "0.9" "install-remaining.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match -I "0.10" "install-remaining.regex"
-	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
-		file_match -I "0.12" "install-remaining.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# 0.16.0 had double warn log output, just ignore, 0.16.1 fixed
-		:
+	if [ ${PKGIN_VERSION} -eq 001000 -o ${PKGIN_VERSION} -eq 001001 ]; then
+		# Buggy versions did not install properly, use pkg_add to
+		# ensure later tests can succeed.
+		export PKG_PATH=${PACKAGES}/All
+		run pkg_add pkgpath-1.0 deptree-top-1.0
+		[ ${status} -eq 0 ]
+		[ -z "${output}" ]
+
+		run pkgin -fy up
+		[ ${status} -eq 0 ]
+
+		skip "fail to install correctly"
 	else
+		run pkgin -fy install pkgpath-1.0 deptree-top-1.0
+		[ ${status} -eq 0 ]
+	fi
+
+	if [ ${PKGIN_VERSION} -lt 001300 -o ${PKGIN_VERSION} -eq 001600 ]; then
+		output_match "4 packages .* install"
+		output_match "pkg_install warnings: 0, errors: 0"
+		output_match "marking pkgpath-1.0 as non auto-removable"
+		output_match "marking deptree-top-1.0 as non auto-removable"
+	else
+		# Non-deterministic output ordering.
 		file_match -I "install-remaining.regex"
 	fi
 }
@@ -226,10 +253,14 @@ teardown_file()
 	output_match "nothing to do"
 
 	# Verify a force install refreshes the remote summary, except it
-	# doesn't pre-0.10
+	# doesn't prior to 0.10.0.
 	run pkgin -fy install preserve
-	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -ge 001000 ]; then
+	if [ ${PKGIN_VERSION} -eq 001000 -o ${PKGIN_VERSION} -eq 001001 ]; then
+		[ ${status} -eq 1 ]
+	else
+		[ ${status} -eq 0 ]
+	fi
+	if [ ${PKGIN_VERSION} -gt 001001 ]; then
 		output_match "processing remote summary"
 	fi
 	output_match "nothing to do"
@@ -278,10 +309,17 @@ teardown_file()
 	for cmd in search se; do
 		run pkgin ${cmd} preserve
 		[ ${status} -eq 0 ]
-		compare_output "pkgin.search"
+
+		if [ ${PKGIN_VERSION} -eq 000700 -o \
+		     ${PKGIN_VERSION} -eq 000800 ]; then
+			output_match "preserve-1.0;=;Package should remain"
+		else
+			compare_output "pkgin.search"
+		fi
 	done
 }
 @test "${SUITE} verify pkgin stats" {
+	skip_if_version -le 000604 "does not support stats"
 	for cmd in stats st; do
 		run pkgin stats
 		[ ${status} -eq 0 ]
@@ -293,7 +331,9 @@ teardown_file()
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -le 211201 ]; then
-			compare_output "21.12.1" "pkgin.show-keep"
+			output_match "deptree-top-1.0 is marked as non-auto"
+			output_match "pkgpath-1.0 is marked as non-auto"
+			output_match "preserve-1.0 is marked as non-auto"
 		else
 			compare_output "pkgin.show-keep"
 		fi
@@ -304,7 +344,8 @@ teardown_file()
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -le 211201 ]; then
-			compare_output "21.12.1" "pkgin.show-no-keep"
+			output_match "deptree-bottom-1.0 is marked as auto"
+			output_match "deptree-middle-1.0 is marked as auto"
 		else
 			compare_output "pkgin.show-no-keep"
 		fi
@@ -364,6 +405,10 @@ teardown_file()
 	compare_pkg_info "pkg_info.final"
 }
 @test "${SUITE} verify pkgin list" {
+	if [ ${PKGIN_VERSION} -eq 000700 -o \
+	     ${PKGIN_VERSION} -eq 000800 ]; then
+		skip "parseable output in test suite"
+	fi
 	compare_pkgin_list "pkgin-list.final"
 }
 @test "${SUITE} verify package file contents" {
