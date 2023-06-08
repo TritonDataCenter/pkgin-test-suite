@@ -57,7 +57,10 @@ fi
 @test "${SUITE} test initial pkgin update" {
 	run pkgin ${yflag} update
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+	if [ ${PKGIN_VERSION} -lt 000700 ]; then
+		output_match "downloading pkg_summary"
+		output_match "updating database"
+	elif [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "download started."
 		output_match "download ended."
 	else
@@ -77,7 +80,10 @@ fi
 @test "${SUITE} test subsequent pkgin update" {
 	run pkgin ${yflag} update
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+	if [ ${PKGIN_VERSION} -lt 000700 ]; then
+		output_match "downloading pkg_summary"
+		output_match "updating database"
+	elif [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "download started."
 		output_match "download ended."
 	else
@@ -97,21 +103,33 @@ fi
 	for cmd in list ls; do
 		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
-		line_match 0 "Requested list is empty."
+		if [ ${PKGIN_VERSION} -lt 000700 ]; then
+			output_match "Requested list is empty."
+		else
+			line_match 0 "Requested list is empty."
+		fi
 	done
 }
 @test "${SUITE} test pkgin avail" {
 	for cmd in avail av; do
 		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 0 ]
-		line_match 0 "Requested list is empty."
+		if [ ${PKGIN_VERSION} -lt 000700 ]; then
+			output_match "Requested list is empty."
+		else
+			line_match 0 "Requested list is empty."
+		fi
 	done
 }
 @test "${SUITE} test pkgin search (no arguments)" {
 	for cmd in search se; do
 		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
-		line_match 0 "pkgin.*: missing search string"
+		if [ ${PKGIN_VERSION} -lt 000700 ]; then
+			output_match "missing search string"
+		else
+			line_match 0 "pkgin.*: missing search string"
+		fi
 	done
 }
 @test "${SUITE} test pkgin search (missing package)" {
@@ -281,7 +299,6 @@ fi
 		output_match "Usage: pkgin.*"
 		output_match "Commands and shortcuts."
 		output_match "list.*"
-		output_match "stats.*"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
@@ -301,7 +318,6 @@ fi
 		output_match "Usage: pkgin.*"
 		output_match "Commands and shortcuts."
 		output_match "list.*"
-		output_match "stats.*"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
 		compare_output "0.12" "pkgin.usage"
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
