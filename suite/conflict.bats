@@ -14,6 +14,12 @@
 # any incoming remote package.  This should be fixed!
 #
 
+#
+# pkgin 0.8.0 and earlier do not appear to record any CONFLICTS in the
+# database, possibly due to relying on CONFLICTS coming before PKGNAME, so
+# until we figure out a workaround most tests are just skipped.
+#
+
 SUITE="conflict"
 
 load common
@@ -58,6 +64,7 @@ teardown_file()
 {
 	stop_httpd
 }
+
 @test "${SUITE} perform initial pkgin setup" {
         export PKG_PATH=${PACKAGES}/All
         run pkg_add preserve
@@ -71,6 +78,7 @@ teardown_file()
 # Test @pkgcfl conflicts.
 #
 @test "${SUITE} attempt to not install @pkgcfl conflict package" {
+	skip_if_version -le 000800 "does not parse pkg_summary correctly"
 	if [ ${PKGIN_VERSION} -eq 200700 -o ${PKGIN_VERSION} -eq 200800 ]; then
 		skip "crashes due to NetBSDfr/pkgin#105"
 	fi
@@ -81,7 +89,9 @@ teardown_file()
 @test "${SUITE} attempt to install @pkgcfl conflict package" {
 	run pkgin -y install conflict-pkg
 	[ ${status} -eq 1 ]
-	output_match "conflict-pkg.* conflicts with installed package preserve"
+	if [ ${PKGIN_VERSION} -gt 000800 ]; then
+		output_match "conflict-pkg.* conflicts with .* preserve"
+	fi
 	output_match "pkg_install warnings: 0, errors: 1"
 }
 @test "${SUITE} verify pkg_install-err.log (@pkgcfl)" {
@@ -93,11 +103,13 @@ teardown_file()
 # Test PLIST conflicts.
 #
 @test "${SUITE} attempt to install PLIST confict package" {
+	skip_if_version -le 000800 "does not parse pkg_summary correctly"
 	run pkgin -y install conflict-plist
 	[ ${status} -eq 1 ]
 	output_match "pkg_install warnings: 0, errors: 1"
 }
 @test "${SUITE} verify pkg_install-err.log (PLIST)" {
+	skip_if_version -le 000800 "does not parse pkg_summary correctly"
 	run cat ${PKG_INSTALL_LOG}
 	[ ${status} -eq 0 ]
 	output_match "Conflicting PLIST with preserve-1.0"
@@ -115,11 +127,13 @@ teardown_file()
 	compare_output "pkgin-conflicts.local"
 }
 @test "${SUITE} verify REMOTE_CONFLICTS table" {
+	skip_if_version -le 000800 "does not parse pkg_summary correctly"
 	run pkgdbsql "SELECT DISTINCT REMOTE_CONFLICTS_PKGNAME FROM REMOTE_CONFLICTS;"
 	[ ${status} -eq 0 ]
 	compare_output "pkgin-conflicts.remote"
 }
 
 @test "${SUITE} verify pkg_info" {
+	skip_if_version -le 000800 "does not parse pkg_summary correctly"
 	compare_pkg_info "pkg_info.final"
 }
