@@ -112,6 +112,7 @@ teardown_file()
 }
 
 @test "${SUITE} test pkgin stats with large values" {
+	skip_if_version -lt 000700 "does not support stats"
 	run pkgin stats
 	[ ${status} -eq 0 ]
 	output_match "Total size of packages: 877P"
