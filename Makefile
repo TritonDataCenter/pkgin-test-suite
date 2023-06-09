@@ -7,15 +7,9 @@ BATS?=		bin/bats
 BATS_JOBS?=	-j 1
 PKGIN?=		pkgin
 
-SUITES+=	suite/categories.bats
-SUITES+=	suite/conflict.bats
-SUITES+=	suite/empty.bats
-SUITES+=	suite/file-dl.bats
-SUITES+=	suite/http-dl.bats
-SUITES+=	suite/install.bats
-SUITES+=	suite/invalid.bats
-SUITES+=	suite/provreq.bats
-SUITES+=	suite/upgrade.bats
+SUITES=		categories conflict empty file-dl http-dl
+SUITES+=	install invalid provreq upgrade
+SUITE_FILES=	`ls -1 suite/*.bats`
 
 #
 # All configuration should be done by this point.  Start generating the test
@@ -33,15 +27,20 @@ check-deps:
 		false; \
 	fi
 
+.PHONY: ${SUITES}
+${SUITES}: check-deps
+	@echo '=> Running $@ test suite with PKGIN=${PKGIN}'
+	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} suite/$@.bats
+
 .PHONY: bats-test
 bats-test: check-deps
 	@echo '=> Running test suite with PKGIN=${PKGIN}'
-	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} ${SUITES}
+	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} ${SUITE_FILES}
 
 .PHONY: bats-tap
 bats-tap: check-deps
 	@echo '=> Running test suite with PKGIN=${PKGIN} (tap output)'
-	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} --tap ${SUITES}
+	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} --tap ${SUITE_FILES}
 
 #
 # Helpful debug targets.
