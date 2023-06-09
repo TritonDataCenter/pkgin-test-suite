@@ -28,7 +28,7 @@ tap: bats-tap
 
 .PHONY: check-deps
 check-deps:
-	@if ! command -v socat; then \
+	@if ! command -v socat >/dev/null; then \
 		echo "socat is required to run the test suite"; \
 		false; \
 	fi
