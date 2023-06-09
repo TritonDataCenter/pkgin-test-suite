@@ -234,58 +234,76 @@ teardown_file()
 	run pkgin -n fug
 	[ ${status} -eq 0 ]
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match -I "0.9" "full-upgrade-output-only.regex"
+		output_match "3 packages to be upgraded"
+		output_match "4 packages to be installed"
 	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match -I "0.10" "full-upgrade-output-only.regex"
+		output_match "4 packages to be upgraded"
+		output_match "5 packages to be installed"
 	else
 		file_match -I "full-upgrade-output-only.regex"
 	fi
 }
 @test "${SUITE} test pkgin full-upgrade (download only)" {
-	# pkgin 0.9.4 doesn't download only!
-	skip_if_version -lt 001000 "known fail"
-
-	# The output order here is non-deterministic.
+	skip_if_version -lt 001002 "not supported"
 	run pkgin -dfy fug
-	if [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match -I "0.10" "full-upgrade-download-only.regex"
-	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
-		file_match -I "0.12" "full-upgrade-download-only.regex"
-	elif [ ${PKGIN_VERSION} -lt 001601 ]; then
-		# Caused by a bug introduced in 0.13, fixed in 0.16.1, trying
-		# to record refresh packages after only downloading.  Should
-		# have run the test suite!
-		file_match -I "0.15" "full-upgrade-download-only.regex"
+	[ ${status} -eq 0 ]
+
+	if [ ${PKGIN_VERSION} -lt 001601 ]; then
+		# Bug in 0.13 through 0.16.0 tried to record refresh packages.
+		output_match "5 packages .* download"
+		output_match "downloading deptree-bottom-2.0.tgz done."
+		output_match "downloading deptree-middle-2.0.tgz done."
+		output_match "downloading deptree-top-2.0.tgz done."
+		output_match "downloading refresh-1.0.tgz done."
+		output_match "downloading upgrade-2.0.tgz done."
 	else
+		# The output order is non-deterministic.
 		file_match -I "full-upgrade-download-only.regex"
 	fi
 }
-
 @test "${SUITE} test pkgin full-upgrade (output only after download)" {
+	skip_if_version -eq 001000 "buggy release"
+	skip_if_version -eq 001001 "buggy release"
 	run pkgin -fn fug
 	[ ${status} -eq 0 ]
+
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match -I "0.9" "full-upgrade-output-only-2.regex"
+		output_match "3 packages to be upgraded"
+		output_match "4 packages to be installed"
 	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match -I "0.10" "full-upgrade-output-only-2.regex"
+		output_match "4 packages to be upgraded"
+		output_match "5 packages to be installed"
 	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
-		file_match -I "0.12" "full-upgrade-output-only-2.regex"
+		output_match "1 package to refresh"
+		output_match "3 packages to upgrade"
+		output_match "1 package to install"
 	else
+		# The output order is non-deterministic.
 		file_match -I "full-upgrade-output-only-2.regex"
 	fi
 }
 @test "${SUITE} test pkgin full-upgrade" {
 	run pkgin -y fug
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "full-upgrade.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "full-upgrade.regex"
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# Avoid 0.16.0 due to double printing bug of error log.
-		:
+
+	if [ ${PKGIN_VERSION} -lt 001100 ]; then
+		output_match "installing deptree-bottom-2.0..."
+		output_match "installing deptree-middle-2.0..."
+		output_match "installing deptree-top-2.0..."
+		if [ ${PKGIN_VERSION} -ge 001000 ]; then
+			output_match "installing refresh-1.0..."
+		fi
+		output_match "installing upgrade-2.0..."
+		output_match "pkg_install warnings: 0, errors: 0"
+		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
-		file_match "20.5.1" "full-upgrade.regex"
+		output_match "refreshing refresh-1.0..."
+		output_match "upgrading deptree-bottom-2.0..."
+		output_match "upgrading deptree-top-2.0..."
+		output_match "upgrading upgrade-2.0..."
+		output_match "installing deptree-middle-2.0..."
+		output_match "pkg_install warnings: 0, errors: 0"
+		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
 	else
 		file_match "full-upgrade.regex"
 	fi
@@ -311,7 +329,10 @@ teardown_file()
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -le 211201 ]; then
-			compare_output "21.12.1" "pkgin.show-keep"
+			line_match 0 "deptree-top-2.0 is marked as non-auto"
+			line_match 1 "pkgpath-1.0 is marked as non-auto"
+			line_match 2 "refresh-1.0 is marked as non-auto"
+			line_match 3 "upgrade-2.0 is marked as non-auto"
 		else
 			compare_output "pkgin.show-keep"
 		fi
@@ -320,7 +341,8 @@ teardown_file()
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
 		if [ ${PKGIN_VERSION} -le 211201 ]; then
-			compare_output "21.12.1" "pkgin.show-no-keep"
+			line_match 0 "deptree-bottom-2.0 is marked as auto"
+			line_match 1 "deptree-middle-2.0 is marked as auto"
 		else
 			compare_output "pkgin.show-no-keep"
 		fi
@@ -367,13 +389,19 @@ teardown_file()
 @test "${SUITE} test install of package where PKGPATH changed" {
 	run pkgin -y install pkgpath-2.0
 	[ ${status} -eq 0 ]
-	if [ ${PKGIN_VERSION} -lt 001000 ]; then
-		file_match "0.9" "install-pkgpath-upgrade.regex"
-	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
-		file_match "0.10" "install-pkgpath-upgrade.regex"
+
+	if [ ${PKGIN_VERSION} -lt 001100 ]; then
+		output_match "1 package.* to be upgraded"
+		output_match "1 package.* to be installed"
+		output_match "removing pkgpath-1.0..."
+		output_match "installing pkgpath-2.0..."
+		output_match "pkg_install warnings: 0, errors: 0"
+		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
 	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
-		# Avoid 0.16.0 due to double printing bug of error log.
-		:
+		output_match "1 package to upgrade"
+		output_match "upgrading pkgpath-2.0..."
+		output_match "pkg_install warnings: 0, errors: 0"
+		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
 	else
 		file_match "install-pkgpath-upgrade.regex"
 	fi
@@ -407,6 +435,8 @@ teardown_file()
 	compare_pkg_info "pkg_info.final"
 }
 @test "${SUITE} verify pkgin list" {
+	skip_if_version -eq 000700 "parseable output in test suite"
+	skip_if_version -eq 000800 "parseable output in test suite"
 	compare_pkgin_list "pkgin-list.final"
 }
 @test "${SUITE} verify package file contents" {
