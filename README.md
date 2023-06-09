@@ -20,30 +20,24 @@ This test suite requires:
 In order to test pkgin 0.9 or older, you will first need to apply the
 following three commits:
 
-https://github.com/joyent/pkgin/commit/1a1f4fbd1372f83e7b5abe5fd8a4d71e6c6fdbcd
-https://github.com/joyent/pkgin/commit/f3b9d98e5bf248a4f90d378f6b07eb99f46e7321
-https://github.com/joyent/pkgin/commit/84dddcf0dba02784d430fd42834f12c9bda82b7d
+https://github.com/NetBSDfr/pkgin/commit/1a1f4fbd1372f83e7b5abe5fd8a4d71e6c6fdbcd
+https://github.com/NetBSDfr/pkgin/commit/f3b9d98e5bf248a4f90d378f6b07eb99f46e7321
+https://github.com/NetBSDfr/pkgin/commit/84dddcf0dba02784d430fd42834f12c9bda82b7d
 
 These add support for the `PKGIN_DBDIR` and `PKG_INSTALL_DIR` environment
 variables.  Without these pkgin will use the system databases and bad things
 will happen.
 
-Currently the test suite only supports the latest version of each minor
-release, so for example running the test suite against pkgin-0.11.0 will show
-lots of errors, while pkgin-0.11.8 will be clean.
+For versions 0.6.4 through 0.8.0 there are patch files in the
+[patches](/patches/) directory for each of them to aid applying, as there are
+numerous differences in these older releases that cause merge conflicts.
 
-Currently tested to be clean are:
+## Supported Versions
 
- * pkgin-0.9.4 (plus 3 patches above)
- * pkgin-0.10.2
- * pkgin-0.11.8
- * pkgin-0.12.0
- * pkgin-0.13.0
- * pkgin-0.14.0
- * pkgin-0.15.0
- * pkgin-0.16.0
- * pkgin-0.16.1
- * pkgin-20.5.1 or newer
+The test suite is designed to support all versions from 0.6.4 through to the
+latest, and provides various syntactic sugar to make this easy.
+
+Currently the test suite should run clean on all tagged versions since 0.6.4.
 
 ## Running
 
