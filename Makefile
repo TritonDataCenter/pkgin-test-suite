@@ -7,7 +7,7 @@ BATS?=		bin/bats
 BATS_JOBS?=	-j 1
 PKGIN?=		pkgin
 
-SUITES=		categories conflict empty file-dl http-dl
+SUITES=		autoremove categories conflict empty file-dl http-dl
 SUITES+=	install invalid provreq upgrade
 SUITE_FILES=	`ls -1 suite/*.bats`
 
