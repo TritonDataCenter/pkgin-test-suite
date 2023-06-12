@@ -7,8 +7,8 @@ BATS?=		bin/bats
 BATS_JOBS?=	-j 1
 PKGIN?=		pkgin
 
-SUITES=		autoremove categories conflict empty file-dl http-dl
-SUITES+=	install invalid provreq upgrade
+SUITES=		autoremove break-depends categories conflict empty
+SUITES+=	file-dl http-dl install invalid provreq upgrade
 
 #
 # All configuration should be done by this point.  Start generating the test

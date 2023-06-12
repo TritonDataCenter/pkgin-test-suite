@@ -1,0 +1,8 @@
+base-2.0            Base package for initial installation
+left1-2.0           First dep pkg on left
+left2-2.0           Second dep pkg on left
+required-left-1.0   Package is required by top
+required-right-1.0  Package is required by top
+right1-2.0          First dep pkg on right
+right2-2.0          Second dep pkg on right
+top-2.0             Package is at the top
