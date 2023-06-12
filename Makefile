@@ -9,7 +9,6 @@ PKGIN?=		pkgin
 
 SUITES=		autoremove categories conflict empty file-dl http-dl
 SUITES+=	install invalid provreq upgrade
-SUITE_FILES=	`ls -1 suite/*.bats`
 
 #
 # All configuration should be done by this point.  Start generating the test
@@ -35,12 +34,12 @@ ${SUITES}: check-deps
 .PHONY: bats-test
 bats-test: check-deps
 	@echo '=> Running test suite with PKGIN=${PKGIN}'
-	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} ${SUITE_FILES}
+	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} suite/*.bats
 
 .PHONY: bats-tap
 bats-tap: check-deps
 	@echo '=> Running test suite with PKGIN=${PKGIN} (tap output)'
-	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} --tap ${SUITE_FILES}
+	@PKGIN=${PKGIN} ${BATS} ${BATS_JOBS} --tap suite/*.bats
 
 #
 # Helpful debug targets.
