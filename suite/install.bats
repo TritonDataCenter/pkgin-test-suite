@@ -146,7 +146,7 @@ teardown_file()
 }
 @test "${SUITE} verify pkgin list against existing installation" {
 	if [ ${PKGIN_VERSION} -eq 000700 -o ${PKGIN_VERSION} -eq 000800 ]; then
-		# parseable output in test output instead of normal
+		# NetBSDfr/pkgin#46 (incorrectly uses parseable output)
 		compare_pkg_info "pkg_info.start"
 	else
 		compare_pkgin_list "pkgin-list.start"
@@ -199,7 +199,7 @@ teardown_file()
 }
 @test "${SUITE} verify pkgin list against empty installation" {
 	if [ ${PKGIN_VERSION} -eq 000700 -o ${PKGIN_VERSION} -eq 000800 ]; then
-		# parseable output in test output instead of normal
+		# NetBSDfr/pkgin#46 (incorrectly uses parseable output)
 		compare_pkg_info "pkg_info.start"
 	else
 		compare_pkgin_list "pkgin-list.start"
@@ -405,10 +405,8 @@ teardown_file()
 	compare_pkg_info "pkg_info.final"
 }
 @test "${SUITE} verify pkgin list" {
-	if [ ${PKGIN_VERSION} -eq 000700 -o \
-	     ${PKGIN_VERSION} -eq 000800 ]; then
-		skip "parseable output in test suite"
-	fi
+	skip_if_version -eq 000700 "NetBSDfr/pkgin#46 (uses parseable output)"
+	skip_if_version -eq 000800 "NetBSDfr/pkgin#46 (uses parseable output)"
 	compare_pkgin_list "pkgin-list.final"
 }
 @test "${SUITE} verify package file contents" {

@@ -435,8 +435,8 @@ teardown_file()
 	compare_pkg_info "pkg_info.final"
 }
 @test "${SUITE} verify pkgin list" {
-	skip_if_version -eq 000700 "parseable output in test suite"
-	skip_if_version -eq 000800 "parseable output in test suite"
+	skip_if_version -eq 000700 "NetBSDfr/pkgin#46 (uses parseable output)"
+	skip_if_version -eq 000800 "NetBSDfr/pkgin#46 (uses parseable output)"
 	compare_pkgin_list "pkgin-list.final"
 }
 @test "${SUITE} verify package file contents" {
