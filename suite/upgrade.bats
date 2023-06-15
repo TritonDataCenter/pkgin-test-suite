@@ -286,16 +286,14 @@ teardown_file()
 			output_match "installing refresh-1.0..."
 		fi
 		output_match "installing upgrade-2.0..."
-		output_match "pkg_install warnings: 0, errors: 0"
-		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
+		output_match_clean_pkg_install
 	elif [ ${PKGIN_VERSION} -le 200501 ]; then
 		output_match "refreshing refresh-1.0..."
 		output_match "upgrading deptree-bottom-2.0..."
 		output_match "upgrading deptree-top-2.0..."
 		output_match "upgrading upgrade-2.0..."
 		output_match "installing deptree-middle-2.0..."
-		output_match "pkg_install warnings: 0, errors: 0"
-		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
+		output_match_clean_pkg_install
 	else
 		file_match "full-upgrade.regex"
 	fi
@@ -387,13 +385,11 @@ teardown_file()
 		output_match "1 package.* to be installed"
 		output_match "removing pkgpath-1.0..."
 		output_match "installing pkgpath-2.0..."
-		output_match "pkg_install warnings: 0, errors: 0"
-		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
+		output_match_clean_pkg_install
 	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "1 package to upgrade"
 		output_match "upgrading pkgpath-2.0..."
-		output_match "pkg_install warnings: 0, errors: 0"
-		output_not_match "pkg_install warnings: [1-9], errors: [1-9]"
+		output_match_clean_pkg_install
 	else
 		file_match "install-pkgpath-upgrade.regex"
 	fi

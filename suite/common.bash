@@ -531,6 +531,19 @@ file_match()
 	done < ${matchfile}
 	[ ${#lines[@]} -eq ${nl} ]
 }
+#
+# Common output matches
+#
+output_match_clean_pkg_install()
+{
+	#
+	# There are often multiple output lines so we need to check for both
+	# positive and negative matches.
+	#
+	output_match "pkg_install warnings: 0, errors: 0"
+	output_not_match "pkg_install warnings: [1-9]"
+	output_not_match "pkg_install .*errors: [1-9]"
+}
 
 #
 # Skip tests unsuitable for the current release.

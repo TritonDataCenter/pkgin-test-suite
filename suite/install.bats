@@ -188,7 +188,7 @@ teardown_file()
 	       ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "1 package.* install"
 		output_match "installing preserve-1.0"
-		output_match "pkg_install warnings: 0, errors: 0"
+		output_match_clean_pkg_install
 	else
 		file_match "install-against-empty.regex"
 	fi
@@ -226,9 +226,9 @@ teardown_file()
 
 	if [ ${PKGIN_VERSION} -lt 001300 -o ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "4 packages .* install"
-		output_match "pkg_install warnings: 0, errors: 0"
 		output_match "marking pkgpath-1.0 as non auto-removable"
 		output_match "marking deptree-top-1.0 as non auto-removable"
+		output_match_clean_pkg_install
 	else
 		# Non-deterministic output ordering.
 		file_match -I "install-remaining.regex"

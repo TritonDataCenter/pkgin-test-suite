@@ -160,8 +160,8 @@ teardown_file()
 	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
 		output_match "1 package.* to .* install"
 		output_match "download-ok-1.0"
-		output_match "pkg_install warnings: 0, errors: 0"
 		output_match "marking download-ok-1.0 as non auto-removable"
+		output_match_clean_pkg_install
 	else
 		file_match "download-install.regex"
 	fi

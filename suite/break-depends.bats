@@ -169,9 +169,7 @@ teardown_file()
 
 	output_match "7 package.* to.* install"
 	output_match "marking top-1.0 as non auto"
-	output_match "pkg_install warnings: 0, errors: 0"
-	output_not_match "pkg_install warnings: [1-9]"
-	output_not_match "pkg_install .*errors: [1-9]"
+	output_match_clean_pkg_install
 }
 
 @test "${SUITE} switch repository" {
@@ -214,9 +212,7 @@ teardown_file()
 	else
 		[ ${status} -eq 0 ]
 		output_not_match "package.* to.* remove"
-		output_match "pkg_install warnings: 0, errors: 0"
-		output_not_match "pkg_install warnings: [1-9]"
-		output_not_match "pkg_install .*errors: [1-9]"
+		output_match_clean_pkg_install
 	fi
 
 }
