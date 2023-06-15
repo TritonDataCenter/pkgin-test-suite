@@ -361,6 +361,8 @@ create_pkg()
 				    >${pkgdir}/size-pkg
 			fi
 		)
+	else
+		>${pkgdir}/plist
 	fi
 	if [ ! -f ${pkgdir}/size-pkg ]; then
 		echo 0 >${pkgdir}/size-pkg
