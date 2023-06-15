@@ -12,15 +12,12 @@ SUITE="install"
 load common
 
 #
-# Set a common BUILD_DATE for the repository used by this test suite.
-#
-export BUILD_DATE="1970-01-01 12:34:56 +0000"
-
-#
 # Generate packages to be used by the install suite.
 #
 setup_file()
 {
+	BUILD_DATE="${BUILD_DATE_1}"
+
 	#
 	# Simple initial package that must be kept (PKG_PRESERVE)
 	#
@@ -89,7 +86,6 @@ setup_file()
 	create_pkg_summary
 	start_httpd
 
-	#sleep 2
 	#
 	# Generate import file for later use
 	#
@@ -418,5 +414,5 @@ teardown_file()
 	run pkg_info -Q BUILD_DATE preserve-1.0
 	[ ${status} -eq 0 ]
 	[ -n "${output}" ]
-	[ "${output}" = "${BUILD_DATE}" ]
+	[ "${output}" = "${BUILD_DATE_1}" ]
 }

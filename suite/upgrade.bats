@@ -7,24 +7,18 @@ SUITE="upgrade"
 
 load common
 
-#
-# Configure a couple of different repositories, installing from the first, and
-# then upgrading to the second.
-#
-export BUILD_DATE_1="1970-01-01 01:01:01 +0000"
-export BUILD_DATE_2="1970-02-02 02:02:02 +0000"
-#
 setup_file()
 {
 	#
 	# Set up the first repository.
 	#
+	BUILD_DATE="${BUILD_DATE_1}"
 	PACKAGES="${SUITE_WORKDIR}/repo1"
 	PKG_WORKDIR="${SUITE_WORKDIR}/pkg1"
-	HTTPD_PID="${SUITE_WORKDIR}/httpd1.pid"
+	REPO_DATE="${REPO_DATE_1}"
 
 	create_pkg_buildinfo "refresh-1.0" \
-	    "BUILD_DATE=${BUILD_DATE_1}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat1" \
 	    "PKGPATH=cat1/refresh"
 	create_pkg_comment "refresh-1.0" "Package should be refreshed"
@@ -32,7 +26,7 @@ setup_file()
 	create_pkg "refresh-1.0"
 
 	create_pkg_buildinfo "upgrade-1.0" \
-	    "BUILD_DATE=${BUILD_DATE_1}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat1" \
 	    "PKGPATH=cat1/upgrade"
 	create_pkg_comment "upgrade-1.0" "Package should be upgraded"
@@ -40,7 +34,7 @@ setup_file()
 	create_pkg "upgrade-1.0"
 
 	create_pkg_buildinfo "pkgpath-1.0" \
-	    "BUILD_DATE=${BUILD_DATE_1}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat2" \
 	    "PKGPATH=cat2/pkgpath1"
 	create_pkg_comment "pkgpath-1.0" "PKGPATH differs to pkgpath-2.0"
@@ -48,7 +42,7 @@ setup_file()
 	create_pkg "pkgpath-1.0"
 
 	create_pkg_buildinfo "pkgpath-2.0" \
-	    "BUILD_DATE=${BUILD_DATE_1}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat2" \
 	    "PKGPATH=cat2/pkgpath2"
 	create_pkg_comment "pkgpath-2.0" "PKGPATH differs to pkgpath-1.0"
@@ -56,7 +50,7 @@ setup_file()
 	create_pkg "pkgpath-2.0"
 
 	create_pkg_buildinfo "deptree-bottom-1.0" \
-	    "BUILD_DATE=${BUILD_DATE_1}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat3" \
 	    "PKGPATH=cat3/deptree-bottom"
 	create_pkg_comment "deptree-bottom-1.0" \
@@ -65,7 +59,7 @@ setup_file()
 	create_pkg "deptree-bottom-1.0" -P "refresh>=1.0"
 
 	create_pkg_buildinfo "deptree-top-1.0" \
-	    "BUILD_DATE=${BUILD_DATE_1}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat3" \
 	    "PKGPATH=cat3/deptree-top"
 	create_pkg_comment "deptree-top-1.0" \
@@ -73,16 +67,19 @@ setup_file()
 	create_pkg_file "deptree-top-1.0" "share/doc/deptree-top"
 	create_pkg "deptree-top-1.0" -P "deptree-bottom>=1.0"
 
-	create_pkg_summary
+	create_pkg_summary "${REPO_DATE}"
 
 	#
-	# Set up the second repository.
+	# Set up the second repository.  This tests some basic upgrade
+	# scenarios.
 	#
+	BUILD_DATE="${BUILD_DATE_2}"
 	PACKAGES="${SUITE_WORKDIR}/repo2"
 	PKG_WORKDIR="${SUITE_WORKDIR}/pkg2"
+	REPO_DATE="${REPO_DATE_2}"
 
 	create_pkg_buildinfo "refresh-1.0" \
-	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat1" \
 	    "PKGPATH=cat1/refresh"
 	create_pkg_comment "refresh-1.0" "Package should be refreshed"
@@ -90,7 +87,7 @@ setup_file()
 	create_pkg "refresh-1.0"
 
 	create_pkg_buildinfo "upgrade-2.0" \
-	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat1" \
 	    "PKGPATH=cat1/upgrade"
 	create_pkg_comment "upgrade-2.0" "Package should be upgraded"
@@ -110,7 +107,7 @@ setup_file()
 	create_pkg "pkgpath-1.0"
 
 	create_pkg_buildinfo "pkgpath-2.0" \
-	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat2" \
 	    "PKGPATH=cat2/pkgpath2"
 	create_pkg_comment "pkgpath-2.0" "PKGPATH differs to pkgpath-1.0"
@@ -118,7 +115,7 @@ setup_file()
 	create_pkg "pkgpath-2.0"
 
 	create_pkg_buildinfo "deptree-bottom-2.0" \
-	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat3" \
 	    "PKGPATH=cat3/deptree-bottom"
 	create_pkg_comment "deptree-bottom-2.0" \
@@ -127,7 +124,7 @@ setup_file()
 	create_pkg "deptree-bottom-2.0"
 
 	create_pkg_buildinfo "deptree-middle-2.0" \
-	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat3" \
 	    "PKGPATH=cat3/deptree-middle"
 	create_pkg_comment "deptree-middle-2.0" \
@@ -136,7 +133,7 @@ setup_file()
 	create_pkg "deptree-middle-2.0" -P "deptree-bottom-[0-9]*"
 
 	create_pkg_buildinfo "deptree-top-2.0" \
-	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=cat3" \
 	    "PKGPATH=cat3/deptree-top"
 	create_pkg_comment "deptree-top-2.0" \
@@ -144,16 +141,11 @@ setup_file()
 	create_pkg_file "deptree-top-2.0" "share/doc/deptree-top"
 	create_pkg "deptree-top-2.0" -P "deptree-middle>=2.0"
 
-	#
-	# Ensure the second repository has a different timestamp, Last-Modified
-	# only has granularity of 1 second.
-	#
-	sleep 1
-	create_pkg_summary
+	create_pkg_summary "${REPO_DATE}"
 
 	#
-	# Start with the first repository, we'll switch to the second later
-	# by updating the symlink.
+	# Start with the first repository, we'll switch to subsequent
+	# repositories by updating the symlink.
 	#
 	PACKAGES="${SUITE_WORKDIR}/packages"
 	ln -s repo1 ${SUITE_WORKDIR}/packages

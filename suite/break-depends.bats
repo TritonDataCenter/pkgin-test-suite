@@ -39,7 +39,6 @@ SUITE="break-depends"
 
 load common
 
-#
 setup_file()
 {
 	#
@@ -47,7 +46,7 @@ setup_file()
 	#
 	PACKAGES="${SUITE_WORKDIR}/repo1"
 	PKG_WORKDIR="${SUITE_WORKDIR}/pkg1"
-	HTTPD_PID="${SUITE_WORKDIR}/httpd1.pid"
+	REPO_DATE="${REPO_DATE_1}"
 
 	create_pkg_buildinfo "base-1.0" \
 	    "CATEGORIES=cat" \
@@ -77,7 +76,6 @@ setup_file()
 		create_pkg_comment "required-${side}-1.0" "Package is required by top"
 		create_pkg_file "required-${side}-1.0" "share/doc/required-${side}"
 		create_pkg "required-${side}-1.0" -P "left2>=1.0 right2>=1.0"
-
 	done
 
 	create_pkg_buildinfo "top-1.0" \
@@ -87,13 +85,14 @@ setup_file()
 	create_pkg_file "top-1.0" "share/doc/top"
 	create_pkg "top-1.0" -P "required-left>=1.0 required-right>=1.0"
 
-	create_pkg_summary
+	create_pkg_summary "${REPO_DATE}"
 
 	#
 	# Set up the second repository.
 	#
 	PACKAGES="${SUITE_WORKDIR}/repo2"
 	PKG_WORKDIR="${SUITE_WORKDIR}/pkg2"
+	REPO_DATE="${REPO_DATE_2}"
 
 	create_pkg_buildinfo "base-2.0" \
 	    "CATEGORIES=cat" \
@@ -135,15 +134,10 @@ setup_file()
 	create_pkg_file "top-2.0" "share/doc/top"
 	create_pkg "top-2.0" -P "required-left>=1.0"
 
-	#
-	# Ensure the second repository has a different timestamp, Last-Modified
-	# only has granularity of 1 second.
-	#
-	sleep 1
-	create_pkg_summary
+	create_pkg_summary "${REPO_DATE}"
 
 	#
-	# Start with the first repository, we'll switch to the other
+	# Start with the first repository, we'll switch to subsequent
 	# repositories by updating the symlink.
 	#
 	PACKAGES="${SUITE_WORKDIR}/packages"

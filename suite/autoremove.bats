@@ -7,9 +7,6 @@ SUITE="autoremove"
 
 load common
 
-export BUILD_DATE_1="1970-01-01 01:01:01 +0000"
-export BUILD_DATE_2="1970-02-02 02:02:02 +0000"
-#
 setup_file()
 {
 	#
@@ -18,7 +15,7 @@ setup_file()
 	BUILD_DATE="${BUILD_DATE_1}"
 	PACKAGES="${SUITE_WORKDIR}/repo1"
 	PKG_WORKDIR="${SUITE_WORKDIR}/pkg1"
-	HTTPD_PID="${SUITE_WORKDIR}/httpd1.pid"
+	REPO_DATE="${REPO_DATE_1}"
 
 	create_pkg_buildinfo "base-1.0" \
 	    "BUILD_DATE=${BUILD_DATE}" \
@@ -44,7 +41,7 @@ setup_file()
 	create_pkg_file "upgrade-1.0" "share/doc/upgrade"
 	create_pkg "upgrade-1.0" -P "depend-[0-9]*"
 
-	create_pkg_summary
+	create_pkg_summary "${REPO_DATE}"
 
 	#
 	# Set up the second repository.
@@ -52,6 +49,7 @@ setup_file()
 	BUILD_DATE="${BUILD_DATE_2}"
 	PACKAGES="${SUITE_WORKDIR}/repo2"
 	PKG_WORKDIR="${SUITE_WORKDIR}/pkg2"
+	REPO_DATE="${REPO_DATE_2}"
 
 	create_pkg_buildinfo "base-1.0" \
 	    "BUILD_DATE=${BUILD_DATE}" \
@@ -69,15 +67,10 @@ setup_file()
 	create_pkg_file "upgrade-2.0" "share/doc/upgrade"
 	create_pkg "upgrade-2.0"
 
-	#
-	# Ensure the second repository has a different timestamp, Last-Modified
-	# only has granularity of 1 second.
-	#
-	sleep 1
-	create_pkg_summary
+	create_pkg_summary "${REPO_DATE}"
 
 	#
-	# Start with the first repository, we'll switch to the other
+	# Start with the first repository, we'll switch to subsequent
 	# repositories by updating the symlink.
 	#
 	PACKAGES="${SUITE_WORKDIR}/packages"
