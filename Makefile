@@ -8,7 +8,8 @@ BATS_JOBS?=	-j 1
 PKGIN?=		pkgin
 
 SUITES=		autoremove break-depends categories conflict empty
-SUITES+=	file-dl http-dl install invalid provreq upgrade
+SUITES+=	file-dl http-dl invalid provreq
+SUITES+=	install partial-upgrade upgrade
 
 #
 # All configuration should be done by this point.  Start generating the test
