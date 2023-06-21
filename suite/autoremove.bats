@@ -76,9 +76,6 @@ setup_file()
 	PACKAGES="${SUITE_WORKDIR}/packages"
 	ln -s repo1 ${SUITE_WORKDIR}/packages
 	start_httpd
-
-	rm -rf ${LOCALBASE} ${VARBASE}
-	mkdir -p ${PKGIN_DBDIR}
 }
 
 teardown_file()

@@ -53,9 +53,6 @@ setup_file()
 	done
 
 	create_pkg_summary
-
-	rm -rf ${LOCALBASE} ${VARBASE}
-	mkdir -p ${PKGIN_DBDIR}
 }
 
 #

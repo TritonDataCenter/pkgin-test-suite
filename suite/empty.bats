@@ -30,21 +30,21 @@ else
 fi
 
 #
-# Perform the initial update and database creation.  The initial pkgin update
-# should log SQL errors as the database will not exist, so also verify that the
-# SQL log has been created and is not empty.
+# pkgin will not recursively create directories as required, and as we're
+# starting with a completely empty target there is no /var/db, so we need to
+# help it out.  In other test suites we often use pkg_add to install the first
+# package and that will create /var/db/pkgdb, so this is not necessary.
 #
-@test "${SUITE} ensure LOCALBASE and VARBASE are wiped" {
-	run rm -rf ${LOCALBASE} ${VARBASE}
-	[ ${status} -eq 0 ]
-	[ -z "${output}" ]
-
-	# pkgin needs the parent directory to exist.
-	run mkdir -p ${PKGIN_DBDIR}
+@test "${SUITE} create required directories" {
+	run mkdir -p $(dirname ${PKGIN_DBDIR})
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
 }
 
+#
+# Perform the initial update and database creation.  The initial pkgin update
+# should log SQL errors as the database will not exist, so also verify that the
+# SQL log has been created and is not empty.
 #
 # The remote repository directory will change depending on where these
 # tests are being ran, and pkg_summary compression may change, so use

@@ -107,10 +107,6 @@ teardown_file()
 	run rm -rf ${LOCALBASE} ${VARBASE}
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
-
-	run mkdir -p ${PKGIN_DBDIR}
-	[ ${status} -eq 0 ]
-	[ -z "${output}" ]
 }
 
 #
@@ -159,7 +155,7 @@ teardown_file()
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
 
-	run mkdir -p ${PKGIN_DBDIR}
+	run mkdir -p $(dirname ${PKGIN_DBDIR})
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
 }
@@ -280,8 +276,9 @@ teardown_file()
 
 	run rm -rf ${LOCALBASE} ${VARBASE}
 	[ ${status} -eq 0 ]
+	[ -z "${output}" ]
 
-	run mkdir -p ${PKGIN_DBDIR}
+	run mkdir -p $(dirname ${PKGIN_DBDIR})
 	[ ${status} -eq 0 ]
 	[ -z "${output}" ]
 

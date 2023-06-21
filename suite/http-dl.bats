@@ -50,9 +50,6 @@ setup_file()
 
 	create_pkg_summary
 	start_httpd
-
-	rm -rf ${LOCALBASE} ${VARBASE}
-	mkdir -p ${PKGIN_DBDIR}
 }
 
 teardown_file()

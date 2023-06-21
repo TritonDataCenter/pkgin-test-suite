@@ -52,14 +52,6 @@ teardown_file()
 # Ensure a clean work area to start with.
 #
 @test "${SUITE} setup test packages" {
-	run rm -rf ${LOCALBASE} ${VARBASE}
-	[ ${status} -eq 0 ]
-	[ -z "${output}" ]
-
-	run mkdir -p ${PKGIN_DBDIR}
-	[ ${status} -eq 0 ]
-	[ -z "${output}" ]
-
 	# Use pkg_add to assist pkgin-0.9.x
 	export PKG_PATH=${PACKAGES}/All
 	run pkg_add one
