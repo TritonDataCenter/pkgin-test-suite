@@ -8,7 +8,7 @@ BATS_JOBS?=	-j 1
 PKGIN?=		pkgin
 
 SUITES=		autoremove break-depends categories conflict empty
-SUITES+=	file-dl http-dl invalid provreq
+SUITES+=	file-dl http-dl invalid order provreq
 SUITES+=	install partial-upgrade upgrade
 
 #

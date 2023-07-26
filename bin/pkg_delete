@@ -11,4 +11,39 @@ if [ ${BATS_PKGIN_TEST_SUITE} -ne 1 ]; then
 	exit 1
 fi
 
-pkg_delete -K ${PKG_DBDIR} "$@"
+args=()
+addarg()
+{
+	if [ ${#args[@]} -eq 0 ]; then
+		args=("${1}")
+	else
+		args=("${args[@]}" "${1}")
+	fi
+}
+
+#
+# If PKGIN_FORCE_PKG_ORDERING is set then the "-f" argument is removed, causing
+# pkg_delete to log an error if a package that is still required by others, thus
+# indicating that the removal ordering is incorrect.
+#
+for arg; do
+	case "${arg}" in
+	-f)
+		if [ -z "${PKGIN_FORCE_PKG_ORDERING:-}" ]; then
+			addarg "${arg}"
+		fi
+		;;
+	-fv)
+		if [ -z "${PKGIN_FORCE_PKG_ORDERING:-}" ]; then
+			addarg "${arg}"
+		else
+			addarg "-v"
+		fi
+		;;
+	*)
+		addarg "${arg}"
+		;;
+	esac
+done
+
+pkg_delete -K ${PKG_DBDIR} "${args[@]}"
