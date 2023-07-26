@@ -146,8 +146,9 @@ teardown_file()
 		run pkgin -y autoremove
 		[ ${status} -eq 0 ]
 
-		output_match "1 package.* to be autoremoved"
-		output_match "removing depend-1.0"
+		line_match 0 "1 package.* to be autoremoved"
+		line_match 1 "depend-1.0"
+		line_match 2 "removing depend-1.0"
 		output_match_clean_pkg_install
 	fi
 }
