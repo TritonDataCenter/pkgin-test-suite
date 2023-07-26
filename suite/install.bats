@@ -371,10 +371,24 @@ teardown_file()
 	# For some reason 0.9.4 says "pkgin: empty local package list."
 	skip_if_version -lt 001000 "known fail"
 
+	#
+	# Touch the pkgdb to trigger a local summary update, and ensure stdout
+	# isn't spammed with update messages (fixed after 22.10.0).
+	#
 	for cmd in export ex; do
+		run touch ${PKG_DBDIR}
+		[ ${status} -eq 0 ]
+
 		run pkgin_sorted ${cmd}
 		[ ${status} -eq 0 ]
-		compare_output "pkgin.export"
+
+		if [ ${PKGIN_VERSION} -le 221000 ]; then
+			line_match 0 "cat1/preserve"
+			line_match 1 "cat2/pkgpath1"
+			line_match 2 "cat3/deptree-top"
+		else
+			compare_output "pkgin.export"
+		fi
 	done
 }
 @test "${SUITE} verify pkgin pkg-content" {
