@@ -9,14 +9,8 @@ load common
 
 setup_file()
 {
-	BUILD_DATE="1970-01-01 01:01:01 +0000"
+	BUILD_DATE="${BUILD_DATE_1}"
 
-	#
-	# XXX: pkgin does not (yet) print "marking <pkg> as non auto-removable"
-	# messages when installing the first package to an empty pkgdb for some
-	# reason, so just create a dummy package to act as the first one in
-	# order to avoid changing the output matches.
-	#
 	create_pkg_buildinfo "preserve-1.0" \
 	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=download" \
@@ -118,9 +112,11 @@ teardown_file()
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
 
-	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "1 package.* to"
 		output_match ".*download-ok-1.0"
+		output_match "marking download-ok-1.0 as non auto-removable"
+		output_match_clean_pkg_install
 	else
 		file_match "install-downloaded.regex"
 	fi
@@ -154,7 +150,7 @@ teardown_file()
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
 
-	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "1 package.* to .* install"
 		output_match "download-ok-1.0"
 		output_match "marking download-ok-1.0 as non auto-removable"
@@ -225,11 +221,19 @@ teardown_file()
 }
 
 #
-# Test again but all at the same time to verify counters and output format.
+# Test again but all at the same time to verify counters and output format.  As
+# download-ok is still installed that exercises parts of the code that would be
+# skipped if all downloads failed.
 #
 @test "${SUITE} test all failed downloads" {
+	run pkg_delete download-ok
+	[ ${status} -eq 0 ]
+
+	run pkgin -f update
+	[ ${status} -eq 0 ]
+
 	run pkgin -y install download-notfound download-truncate \
-			     download-mismatch
+			     download-mismatch download-ok
 	[ ${status} -eq 1 ]
 
 	if [ ${PKGIN_VERSION} -lt 000900 ]; then
@@ -242,12 +246,23 @@ teardown_file()
 		output_match "Not Found"
 		output_match "download error: .* truncated"
 		output_match "download error: .* does not match pkg_summary"
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
+		output_match "Not Found"
+		output_match "download error: .* truncated"
+		output_match "download error: .* does not match pkg_summary"
+		output_match "pkg_install warnings: 0, errors: 3"
 	else
 		file_match "download-all-failed.regex"
 	fi
 }
 
+#
 # Verify everything is as it should be at the end of the tests.
+#
+#  * pkgin 0.9.4 and earlier fail to install download-ok in the previous test.
+#    As this is the final test just ignore.
+#
 @test "${SUITE} compare pkg_info" {
+	skip_if_version -le 000904 "unsupported"
 	compare_pkg_info "pkg_info.final"
 }
