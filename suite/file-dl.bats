@@ -15,14 +15,8 @@ export PKG_REPOS="file://${PACKAGES}/All"
 
 setup_file()
 {
-	BUILD_DATE="1970-01-01 01:01:01 +0000"
+	BUILD_DATE="${BUILD_DATE_1}"
 
-	#
-	# XXX: pkgin does not (yet) print "marking <pkg> as non auto-removable"
-	# messages when installing the first package to an empty pkgdb for some
-	# reason, so just create a dummy package to act as the first one in
-	# order to avoid changing the output matches.
-	#
 	create_pkg_buildinfo "preserve-1.0" \
 	    "BUILD_DATE=${BUILD_DATE}" \
 	    "CATEGORIES=download" \
@@ -104,10 +98,11 @@ setup_file()
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
 
-	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "1 package.* to .* install"
 		output_match "installing download-ok-1.0"
 		output_match "marking download-ok-1.0 as non auto-removable"
+		output_match_clean_pkg_install
 	else
 		file_match "install-downloaded.regex"
 	fi
@@ -141,7 +136,7 @@ setup_file()
 	run pkgin -y install download-ok
 	[ ${status} -eq 0 ]
 
-	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "1 package.* to .* install"
 		output_match "installing download-ok-1.0"
 		output_match "marking download-ok-1.0 as non auto-removable"
