@@ -188,7 +188,11 @@ create_pkg_buildinfo()
 
 	mkdir -p ${PKG_WORKDIR}/${pkg}
 
-	echo "MACHINE_ARCH=$(bmake -V MACHINE_ARCH)" >>${build_info}
+	if [ -n "${MACHINE_ARCH}" ]; then
+		echo "MACHINE_ARCH=${MACHINE_ARCH}" >>${build_info}
+	else
+		echo "MACHINE_ARCH=$(bmake -V MACHINE_ARCH)" >>${build_info}
+	fi
 	echo "OPSYS=$(uname -s)" >>${build_info}
 	echo "OS_VERSION=$(uname -r | sed -e 's/-.*//')" >>${build_info}
 	echo "PKGTOOLS_VERSION=20091115" >>${build_info}
