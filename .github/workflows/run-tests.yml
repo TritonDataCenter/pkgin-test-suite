@@ -1,0 +1,56 @@
+name: Test pkgin
+on:
+  workflow_dispatch:
+    inputs:
+      tarball_url:
+        description: "URL of pkgin-bins.tar.gz file to download"
+        required: false
+        default: "https://us-central.manta.mnx.io/pkgsrc/public/support/pkgin/pkgin-bins.tar.gz"
+jobs:
+  fetch-bins:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.generate-version.outputs.version }}
+    steps:
+      - name: Download URL
+        if: ${{ inputs.tarball_url != '' }}
+        run: |
+          echo "Downloading tarball from URL: ${{ inputs.tarball_url }}"
+          curl -L -o artifact.tar.gz "${{ inputs.tarball_url }}"
+      - name: Extract tar.gz
+        run: |
+          sudo tar -xzvf artifact.tar.gz -C /
+      - name: Generate matrix.json
+        id: generate-version
+        run: |
+          version=$(jq -cn --argjson bins "$(find /usr/local/bin -type f -name 'pkgin*' -exec basename {} \; | jq -R -s -c 'split("\n")[:-1]')" '{"version": $bins}')
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+  run-tests:
+    needs: fetch-bins
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.fetch-bins.outputs.version) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download URL
+        if: ${{ inputs.tarball_url != '' }}
+        run: |
+          echo "Downloading tarball from URL: ${{ inputs.tarball_url }}"
+          curl -L -o artifact.tar.gz "${{ inputs.tarball_url }}"
+      - name: Extract tar.gz
+        run: |
+          sudo tar -xzvf artifact.tar.gz -C /
+      - name: Build for each version
+        run: |
+          sudo apt-get update
+          sudo apt-get install socat
+          PATH=${PATH}:/usr/local/sbin
+          make MACHINE_ARCH=x86_64 BATS_JOBS="-j 1 --no-tempdir-cleanup" PKGIN=/usr/local/bin/${{ matrix.version }}
+      - name: Upload work areas
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bats-run-${{ matrix.version }}
+          path: /tmp/bats-run-*
