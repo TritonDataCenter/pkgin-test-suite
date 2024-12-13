@@ -17,16 +17,21 @@ setup_file()
 	PACKAGES="${SUITE_WORKDIR}/repo1"
 	PKG_WORKDIR="${SUITE_WORKDIR}/pkg1"
 
+	# Newer pkg_install checks REQUIRES is a valid file.
+	REQUIRES_FILE="${SUITE_WORKDIR}/required"
+	mkdir -p ${SUITE_WORKDIR}
+	touch ${REQUIRES_FILE}
+
 	create_pkg_buildinfo "libobsolete-1.0" \
 	    "PROVIDES=libobsolete.so" \
-	    "REQUIRES=/" \
+	    "REQUIRES=${REQUIRES_FILE}" \
 	    "PKGPATH=cat/libobsolete"
 	create_pkg_comment "libobsolete-1.0" "Obsolete library"
 	create_pkg "libobsolete-1.0" -C "libnew-[0-9]*"
 
 	create_pkg_buildinfo "libfoo-1.0" \
 	    "PROVIDES=libfoo.so" \
-	    "REQUIRES=/" \
+	    "REQUIRES=${REQUIRES_FILE}" \
 	    "SUPERSEDES=libobsolete-[0-9]*" \
 	    "PKGPATH=cat/libfoo"
 	create_pkg_comment "libfoo-1.0" "New library foo"
@@ -34,7 +39,7 @@ setup_file()
 
 	create_pkg_buildinfo "libbar-1.0" \
 	    "PROVIDES=libbar.so" \
-	    "REQUIRES=/" \
+	    "REQUIRES=${REQUIRES_FILE}" \
 	    "SUPERSEDES=libobsolete-[0-9]*" \
 	    "PKGPATH=cat/libbar"
 	create_pkg_comment "libbar-1.0" "New library bar"
@@ -55,7 +60,7 @@ setup_file()
 
 	create_pkg_buildinfo "libnew-2.0" \
 	    "PROVIDES=libnew2.so" \
-	    "REQUIRES=/" \
+	    "REQUIRES=${REQUIRES_FILE}" \
 	    "SUPERSEDES=libobsolete-[0-9]*" \
 	    "PKGPATH=cat/libnew"
 	create_pkg_comment "libnew-2.0" "New library"
