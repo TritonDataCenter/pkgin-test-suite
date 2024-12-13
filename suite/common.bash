@@ -110,7 +110,7 @@ start_httpd()
 {
 	export REPO_PACKAGES="${PACKAGES}/All"
 	export HTTPD_ERR HTTPD_LOG
-	exec socat tcp-listen:${HTTPD_PORT},reuseaddr,fork,keepalive system:"${BATS_ROOT}/bin/httpd" 3>&- &
+	exec socat TCP4-LISTEN:${HTTPD_PORT},reuseaddr,fork,keepalive system:"${BATS_ROOT}/bin/httpd" 3>&- &
 	echo "$!" >${HTTPD_PID}
 }
 stop_httpd()
