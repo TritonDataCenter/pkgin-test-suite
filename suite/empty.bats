@@ -176,11 +176,8 @@ fi
 	for cmd in remove rm; do
 		run pkgin ${yflag} ${cmd} pkg-does-not-exist
 		[ ${status} -eq 1 ]
-		if [ ${PKGIN_VERSION} -lt 001000 ]; then
-			output_match "pkgin.*: empty local package list."
-		else
-			[ "${output}" = "pkgin: empty local package list." ]
-		fi
+		# Apparently errx() on Linux ignores setprogname()
+		output_match "empty local package list"
 	done
 }
 @test "${SUITE} test pkgin autoremove" {
@@ -217,11 +214,8 @@ fi
 	for cmd in export ex; do
 		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
-		if [ ${PKGIN_VERSION} -lt 001000 ]; then
-			output_match "pkgin.*: empty local package list."
-		else
-			[ "${output}" = "pkgin: empty local package list." ]
-		fi
+		# Apparently errx() on Linux ignores setprogname()
+		output_match "empty local package list"
 	done
 }
 @test "${SUITE} test pkgin show-category" {
@@ -256,11 +250,8 @@ fi
 	for cmd in pkg-content pc pkg-descr pd pkg-build-defs pbd; do
 		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
-		if [ ${PKGIN_VERSION} -lt 001000 ]; then
-			output_match "pkgin.*: missing package name"
-		else
-			[ "${output}" = "pkgin: missing package name" ]
-		fi
+		# Apparently errx() on Linux ignores setprogname()
+		output_match "missing package name"
 	done
 }
 @test "${SUITE} test pkgin pkg-* commands (missing package)" {
