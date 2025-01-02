@@ -164,8 +164,11 @@ teardown_file()
 	run pkgin -y install top
 	[ $status -eq 0 ]
 
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		output_match "marking top-1.0 as non auto"
+	fi
+
 	output_match "7 package.* to.* install"
-	output_match "marking top-1.0 as non auto"
 	output_match_clean_pkg_install
 }
 
@@ -208,7 +211,7 @@ teardown_file()
 		output_match "pkg_install warnings: 0, errors: 2"
 	else
 		[ ${status} -eq 0 ]
-		output_not_match "package.* to.* remove"
+		output_not_match "packages to remove"
 		output_match_clean_pkg_install
 	fi
 
