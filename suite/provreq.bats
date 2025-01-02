@@ -92,24 +92,44 @@ teardown_file()
 # Verify the database entries have been loaded, this is useful when developing
 # the pkgin parser to ensure they are correctly registered.
 #
-@test "${SUITE} verify LOCAL_PROVIDES table" {
-	run pkgdbsql "SELECT DISTINCT LOCAL_PROVIDES_PKGNAME FROM LOCAL_PROVIDES;"
+@test "${SUITE} verify local_provides table" {
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		colname="local_provides_pkgname"
+	else
+		colname="filename"
+	fi
+	run pkgdbsql "SELECT DISTINCT ${colname} FROM local_provides;"
 	[ ${status} -eq 0 ]
 	line_match 0 "libprovides.so"
 }
-@test "${SUITE} verify REMOTE_PROVIDES table" {
-	run pkgdbsql "SELECT DISTINCT REMOTE_PROVIDES_PKGNAME FROM REMOTE_PROVIDES;"
+@test "${SUITE} verify remote_provides table" {
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		colname="remote_provides_pkgname"
+	else
+		colname="filename"
+	fi
+	run pkgdbsql "SELECT DISTINCT ${colname} FROM remote_provides;"
 	[ ${status} -eq 0 ]
 	line_match 0 "libprovides.so"
 }
 
-@test "${SUITE} verify LOCAL_REQUIRES table" {
-	run pkgdbsql "SELECT DISTINCT LOCAL_REQUIRES_PKGNAME FROM LOCAL_REQUIRES;"
+@test "${SUITE} verify local_requires table" {
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		colname="local_requires_pkgname"
+	else
+		colname="filename"
+	fi
+	run pkgdbsql "SELECT DISTINCT ${colname} FROM local_requires;"
 	[ ${status} -eq 0 ]
 	line_match 0 "libprovides.so"
 }
-@test "${SUITE} verify REMOTE_REQUIRES table" {
-	run pkgdbsql "SELECT DISTINCT REMOTE_REQUIRES_PKGNAME FROM REMOTE_REQUIRES;"
+@test "${SUITE} verify remote_requires table" {
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		colname="remote_requires_pkgname"
+	else
+		colname="filename"
+	fi
+	run pkgdbsql "SELECT DISTINCT ${colname} FROM remote_requires;"
 	[ ${status} -eq 0 ]
 	line_match 0 "libprovides.so"
 }
