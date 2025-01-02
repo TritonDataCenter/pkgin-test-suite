@@ -173,8 +173,8 @@ teardown_file()
 
 	if [ ${PKGIN_VERSION} -lt 000900 ]; then
 		output_match "download-notfound-1.0 is not available"
-	elif [ ${PKGIN_VERSION} -lt 001101 -o \
-	       ${PKGIN_VERSION} -eq 001600 ]; then
+	# pkgin 0.9.4 doesn't print package name so just match on Not Found.
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "Not Found"
 	else
 		file_match "download-notfound.regex"
@@ -191,9 +191,9 @@ teardown_file()
 		output_match "truncated file"
 	elif [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "download-truncate-1.0 is not available"
-	elif [ ${PKGIN_VERSION} -lt 001101 -o \
-	       ${PKGIN_VERSION} -eq 001600 ]; then
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "download error: .* truncated"
+		output_match "downloading download-truncate-1.0.tgz done."
 	else
 		file_match "download-truncate.regex"
 	fi
@@ -209,9 +209,9 @@ teardown_file()
 		output_match "pkg_install warnings: 0, errors: 1"
 	elif [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "pkgin.*: download mismatch"
-	elif [ ${PKGIN_VERSION} -lt 001101 -o \
-	       ${PKGIN_VERSION} -eq 001600 ]; then
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "download error: .* does not match pkg_summary"
+		output_match "downloading download-mismatch-1.0.tgz done."
 	else
 		file_match "download-mismatch.regex"
 	fi
