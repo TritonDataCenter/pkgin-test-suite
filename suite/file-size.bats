@@ -89,7 +89,11 @@ teardown_file()
 	run pkgin -y upgrade
 	[ ${status} -eq 0 ]
 
-	output_match "13K to download, 13B to install"
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		output_match "13K to download, 13B to install"
+	else
+		output_match "13K to download, 13B of additional"
+	fi
 }
 
 @test "${SUITE} test second upgrade (decrease)" {
@@ -107,5 +111,9 @@ teardown_file()
 	run pkgin -y upgrade
 	[ ${status} -eq 0 ]
 
-	output_match "13K to download, -27B to install"
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		output_match "13K to download, -27B to install"
+	else
+		output_match "13K to download, 27B of disk space will be freed"
+	fi
 }
