@@ -1,10 +1,10 @@
 calculating dependencies...done.
 1 package to upgrade:
   pkgpath-2.0
-0 to refresh, 1 to upgrade, 0 to install
-[0-9]+[BK] to download, 0B to install
+0 to remove, 0 to refresh, 1 to upgrade, 0 to install
+[0-9]+[BK] to download, 0B of additional disk space will be used
 downloading pkgpath-2.0.tgz done.
-upgrading pkgpath-2.0...
+.1/1. upgrading pkgpath-2.0...
 pkg_install warnings: 0, errors: 0
 reading local summary...
 processing local summary...

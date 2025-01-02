@@ -4,10 +4,10 @@ processing remote summary .http://.*
 downloading pkg_summary.* done.
 calculating dependencies...done.
 5 packages to download:
-  .*
+  deptree-bottom-2.0 deptree-middle-2.0 deptree-top-2.0 refresh-1.0 upgrade-2.0
 [0-9]+[BK] to download
-downloading deptree-middle-2.0.tgz done.
-downloading deptree-top-2.0.tgz done.
-downloading deptree-bottom-2.0.tgz done.
-downloading refresh-1.0.tgz done.
-downloading upgrade-2.0.tgz done.
+.1/5. downloading deptree-bottom-2.0.tgz done.
+.2/5. downloading deptree-middle-2.0.tgz done.
+.3/5. downloading deptree-top-2.0.tgz done.
+.4/5. downloading refresh-1.0.tgz done.
+.5/5. downloading upgrade-2.0.tgz done.

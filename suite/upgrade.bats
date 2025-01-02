@@ -183,13 +183,11 @@ teardown_file()
 
 	run ln -s repo2 ${SUITE_WORKDIR}/packages
 	[ ${status} -eq 0 ]
-}
 
-# pkgin 0.9.x. requires an explicit update for repository refresh.
-@test "${SUITE} perform pkgin update" {
-	skip_if_version -ge 001000 "Not required for 0.10+"
-	run pkgin -fy update
-	[ ${status} -eq 0 ]
+	if [ ${PKGIN_VERSION} -lt 001000 ]; then
+		run pkgin -fy update
+		[ ${status} -eq 0 ]
+	fi
 }
 
 #
@@ -228,8 +226,10 @@ teardown_file()
 	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
 		output_match "4 packages to be upgraded"
 		output_match "5 packages to be installed"
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
+		output_match "1 to refresh, 3 to upgrade, 1 to install"
 	else
-		file_match -I "full-upgrade-output-only.regex"
+		file_match "full-upgrade-output-only.regex"
 	fi
 }
 @test "${SUITE} test pkgin full-upgrade (download only)" {
@@ -237,8 +237,7 @@ teardown_file()
 	run pkgin -dfy fug
 	[ ${status} -eq 0 ]
 
-	if [ ${PKGIN_VERSION} -lt 001601 ]; then
-		# Bug in 0.13 through 0.16.0 tried to record refresh packages.
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "5 packages .* download"
 		output_match "downloading deptree-bottom-2.0.tgz done."
 		output_match "downloading deptree-middle-2.0.tgz done."
@@ -246,8 +245,7 @@ teardown_file()
 		output_match "downloading refresh-1.0.tgz done."
 		output_match "downloading upgrade-2.0.tgz done."
 	else
-		# The output order is non-deterministic.
-		file_match -I "full-upgrade-download-only.regex"
+		file_match "full-upgrade-download-only.regex"
 	fi
 }
 @test "${SUITE} test pkgin full-upgrade (output only after download)" {
@@ -262,13 +260,12 @@ teardown_file()
 	elif [ ${PKGIN_VERSION} -lt 001100 ]; then
 		output_match "4 packages to be upgraded"
 		output_match "5 packages to be installed"
-	elif [ ${PKGIN_VERSION} -lt 001300 ]; then
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "1 package to refresh"
 		output_match "3 packages to upgrade"
 		output_match "1 package to install"
 	else
-		# The output order is non-deterministic.
-		file_match -I "full-upgrade-output-only-2.regex"
+		file_match "full-upgrade-output-only-2.regex"
 	fi
 }
 @test "${SUITE} test pkgin full-upgrade" {
@@ -284,7 +281,8 @@ teardown_file()
 		fi
 		output_match "installing upgrade-2.0..."
 		output_match_clean_pkg_install
-	elif [ ${PKGIN_VERSION} -le 200501 ]; then
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
+		output_match "1 to refresh, 3 to upgrade, 1 to install"
 		output_match "refreshing refresh-1.0..."
 		output_match "upgrading deptree-bottom-2.0..."
 		output_match "upgrading deptree-top-2.0..."
@@ -383,9 +381,10 @@ teardown_file()
 		output_match "removing pkgpath-1.0..."
 		output_match "installing pkgpath-2.0..."
 		output_match_clean_pkg_install
-	elif [ ${PKGIN_VERSION} -eq 001600 ]; then
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "1 package to upgrade"
 		output_match "upgrading pkgpath-2.0..."
+		output_match "0 to refresh, 1 to upgrade, 0 to install"
 		output_match_clean_pkg_install
 	else
 		file_match "install-pkgpath-upgrade.regex"
