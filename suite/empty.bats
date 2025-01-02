@@ -148,14 +148,22 @@ fi
 	for cmd in upgrade ug; do
 		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
-		output_match "empty non-autoremovable package list"
+		if [ ${PKGIN_VERSION} -le 221000 ]; then
+			output_match "empty non-autoremovable package list"
+		else
+			output_match "pkgin: empty local package list."
+		fi
 	done
 }
 @test "${SUITE} test pkgin full-upgrade" {
 	for cmd in full-upgrade fug; do
 		run pkgin ${yflag} ${cmd}
 		[ ${status} -eq 1 ]
-		output_match "empty non-autoremovable package list"
+		if [ ${PKGIN_VERSION} -le 221000 ]; then
+			output_match "empty non-autoremovable package list"
+		else
+			output_match "pkgin: empty local package list."
+		fi
 	done
 }
 @test "${SUITE} test pkgin install" {
