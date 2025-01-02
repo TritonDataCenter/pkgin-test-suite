@@ -162,7 +162,7 @@ setup_file()
 	run pkgin -y install download-notfound
 	[ ${status} -eq 1 ]
 
-	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "download-notfound-1.0 is not available"
 		output_match "1 package.* to .* install"
 		output_match "download-notfound-1.0"
@@ -194,7 +194,7 @@ setup_file()
 	run pkgin -y install download-mismatch
 	[ ${status} -eq 1 ]
 
-	if [ ${PKGIN_VERSION} -lt 001101 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "download error: .* does not match pkg_summary"
 		output_match "1 package.* to .* install"
 		output_match "download-mismatch-1.0"
