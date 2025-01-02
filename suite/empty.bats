@@ -151,7 +151,7 @@ fi
 		if [ ${PKGIN_VERSION} -le 221000 ]; then
 			output_match "empty non-autoremovable package list"
 		else
-			output_match "pkgin: empty local package list."
+			output_match "empty local package list."
 		fi
 	done
 }
@@ -162,7 +162,7 @@ fi
 		if [ ${PKGIN_VERSION} -le 221000 ]; then
 			output_match "empty non-autoremovable package list"
 		else
-			output_match "pkgin: empty local package list."
+			output_match "empty local package list."
 		fi
 	done
 }
