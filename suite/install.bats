@@ -126,8 +126,14 @@ teardown_file()
 	run pkgin -y install preserve
 	[ ${status} -eq 0 ]
 
+	#
+	# pkgin NEXT removes the update_localdb() output at the start.
+	#
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "nothing to do"
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
+		line_match 0 "reading local summary..."
+		line_match 5 "nothing to do"
 	else
 		file_match "install-against-existing.regex"
 	fi
@@ -180,8 +186,7 @@ teardown_file()
 
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "nothing to do"
-	elif [ ${PKGIN_VERSION} -lt 001100 -o \
-	       ${PKGIN_VERSION} -eq 001600 ]; then
+	elif [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "1 package.* install"
 		output_match "installing preserve-1.0"
 		output_match_clean_pkg_install
@@ -220,14 +225,13 @@ teardown_file()
 		[ ${status} -eq 0 ]
 	fi
 
-	if [ ${PKGIN_VERSION} -lt 001300 -o ${PKGIN_VERSION} -eq 001600 ]; then
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
 		output_match "4 packages .* install"
 		output_match "marking pkgpath-1.0 as non auto-removable"
 		output_match "marking deptree-top-1.0 as non auto-removable"
 		output_match_clean_pkg_install
 	else
-		# Non-deterministic output ordering.
-		file_match -I "install-remaining.regex"
+		file_match "install-remaining.regex"
 	fi
 }
 # Should only contain "installing .." lines.
@@ -284,7 +288,13 @@ teardown_file()
 
 	run pkgin -y import ${SUITE_WORKDIR}/import-list
 	[ ${status} -eq 0 ]
-	file_match -I "import.regex"
+
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		output_match "0 to refresh, 0 to upgrade, 5 to install"
+		output_match_clean_pkg_install
+	else
+		file_match "import.regex"
+	fi
 
 	run [ -s ${PKG_INSTALL_LOG} ]
 	[ ${status} -eq 0 ]
@@ -358,12 +368,19 @@ teardown_file()
 		compare_output "pkgin.show-full-deps"
 	done
 }
-# XXX: find something that actually works, some issue with FULLPKGNAME?
+#
+# pkgin 22.10.0 and earlier are very limited in what show-rev-deps supports:
+#
+#  - only pkgname with no version is supported
+#  - not all reverse dependencies are handled (e.g. {foo,bar}* matches)
+#
+# The complex-depends test expands on this further.
+#
 @test "${SUITE} verify pkgin show-rev-deps" {
 	for cmd in show-rev-deps srd; do
 		run pkgin ${cmd} deptree-bottom
 		[ ${status} -eq 0 ]
-		compare_output "pkgin.show-rev-deps"
+		file_match "pkgin.show-rev-deps"
 	done
 }
 

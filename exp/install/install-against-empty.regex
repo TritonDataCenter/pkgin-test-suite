@@ -3,10 +3,10 @@ downloading pkg_summary.* done.
 calculating dependencies...done.
 1 package to install:
   preserve-1.0
-0 to refresh, 0 to upgrade, 1 to install
-[0-9]+[BK] to download, [0-9]+[BK] to install
+0 to remove, 0 to refresh, 0 to upgrade, 1 to install
+[0-9]+[BK] to download, [0-9]+[BK] of additional disk space will be used
 downloading preserve-1.0.tgz done.
-installing preserve-1.0...
+.1/1. installing preserve-1.0...
 pkg_install warnings: 0, errors: 0
 reading local summary...
 processing local summary...
