@@ -116,16 +116,26 @@ teardown_file()
 # Verify the database entries have been loaded, this is useful when developing
 # the pkgin parser to ensure they are correctly registered.
 #
-@test "${SUITE} verify LOCAL_CONFLICTS table" {
-	skip "not currently working"
+@test "${SUITE} verify local_conflicts table" {
+	skip_if_version -le 000800 "does not parse pkg_summary correctly"
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		colname="local_conflicts_pkgname"
+	else
+		colname="pattern"
+	fi
 
-	run pkgdbsql "SELECT DISTINCT LOCAL_CONFLICTS_PKGNAME FROM LOCAL_CONFLICTS;"
+	run pkgdbsql "SELECT DISTINCT ${colname} FROM local_conflicts;"
 	[ ${status} -eq 0 ]
 	compare_output "pkgin-conflicts.local"
 }
-@test "${SUITE} verify REMOTE_CONFLICTS table" {
+@test "${SUITE} verify remote_conflicts table" {
 	skip_if_version -le 000800 "does not parse pkg_summary correctly"
-	run pkgdbsql "SELECT DISTINCT REMOTE_CONFLICTS_PKGNAME FROM REMOTE_CONFLICTS;"
+	if [ ${PKGIN_VERSION} -le 221000 ]; then
+		colname="remote_conflicts_pkgname"
+	else
+		colname="pattern"
+	fi
+	run pkgdbsql "SELECT DISTINCT ${colname} FROM remote_conflicts;"
 	[ ${status} -eq 0 ]
 	compare_output "pkgin-conflicts.remote"
 }
