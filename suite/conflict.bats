@@ -109,7 +109,8 @@ teardown_file()
 	skip_if_version -le 000800 "does not parse pkg_summary correctly"
 	run cat ${PKG_INSTALL_LOG}
 	[ ${status} -eq 0 ]
-	output_match "Conflicting PLIST with preserve-1.0"
+	# wiz changed the output Feb 2025 so handle both "[Cc]onflicting..."
+	output_match "onflicting PLIST with preserve-1.0"
 }
 
 #
