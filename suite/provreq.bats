@@ -56,6 +56,18 @@ teardown_file()
         [ ${status} -eq 0 ]
 }
 
+#
+# Important note!  pkgin hardcodes PREFIX and will specifically exclude any
+# checks for libraries that fall under PREFIX.  This is because the checks are
+# performed prior to install.
+#
+# Thus, while these tests use LOCALBASE, in reality they wouldn't work.  They
+# only work here because we override LOCALBASE so that it will be different to
+# the compiled-in PREFIX.
+#
+# TODO: Change pkgin to determine PREFIX at runtime, and have tests for both
+# files inside and outside PREFIX.
+#
 @test "${SUITE} attempt to install missing REQUIRES package" {
 	run pkgin -y install requires
 	[ ${status} -eq 0 ]
@@ -72,6 +84,9 @@ teardown_file()
 
 @test "${SUITE} install REQUIRES package" {
 	run pkgin -y install requires
+	[ ${status} -eq 0 ]
+
+	run pkg_info -qe requires
 	[ ${status} -eq 0 ]
 }
 
