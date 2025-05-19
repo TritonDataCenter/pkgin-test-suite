@@ -1,0 +1,26 @@
+downloading pkg_summary.* done.
+calculating dependencies...done.
+2 packages to refresh:
+  app-1.0 gcc12-libs-12.2.0
+1 package to upgrade:
+  nodejs-14.21.1
+1 package to install:
+  new-1.0
+2 packages to remove .superseded.:
+  npm-6.14.11 old-1.0nb1
+2 to remove, 2 to refresh, 1 to upgrade, 1 to install
+[0-9]+[BK] to download, [0-9]+[BK] of disk space will be freed up
+.1/4. downloading app-1.0.tgz done.
+.2/4. downloading gcc12-libs-12.2.0.tgz done.
+.3/4. downloading new-1.0.tgz done.
+.4/4. downloading nodejs-14.21.1.tgz done.
+.1/2. removing old-1.0...
+.2/2. removing npm-6.14.11...
+pkg_install warnings: 0, errors: 0
+.1/4. refreshing gcc12-libs-12.2.0...
+.2/4. upgrading nodejs-14.21.1...
+.3/4. installing new-1.0...
+.4/4. refreshing app-1.0...
+pkg_install warnings: 0, errors: 0
+reading local summary...
+processing local summary...

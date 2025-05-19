@@ -1,0 +1,4 @@
+app-1.0              App now depends on nodejs
+gcc12-libs-12.2.0    The GNU Compiler Collection (GCC) support shared libraries
+new-1.0              Replacement version of misc utility
+nodejs-14.21.1       V8 JavaScript for clients and servers
