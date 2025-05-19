@@ -128,7 +128,7 @@ teardown_file()
 }
 
 @test "${SUITE} verify keep/no-keep before" {
-	skip_if_version -le 211201 "unsupported"
+	skip_if_version -lt 230801 "output differences"
 	run pkgin show-keep
 	[ ${status} -eq 0 ]
 	compare_output "pkgin-keep.before"
