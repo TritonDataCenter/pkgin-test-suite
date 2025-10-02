@@ -203,9 +203,9 @@ remove_script_output()
 	output_match_clean_pkg_install
 	#
 	# This was broken in 20.7.0 which attempted to fix install ordering
-	# but actually made it worse.  Fixed in NEXT.
+	# but actually made it worse.  Fixed in 23.8.0.
 	#
-	if [ ${PKGIN_VERSION} -lt 200700 -o ${PKGIN_VERSION} -gt 221000 ]; then
+	if [ ${PKGIN_VERSION} -lt 200700 -o ${PKGIN_VERSION} -ge 230800 ]; then
 		verify_install_script_output
 	fi
 }
@@ -234,9 +234,9 @@ remove_script_output()
 		output_match_clean_pkg_install
 	fi
 	#
-	# Broken since 0.11.0 with in-place upgrades, fixed in NEXT.
+	# Broken since 0.11.0 with in-place upgrades, fixed in 23.8.0.
 	#
-	if [ ${PKGIN_VERSION} -lt 001100 -o ${PKGIN_VERSION} -gt 221000 ]; then
+	if [ ${PKGIN_VERSION} -lt 001100 -o ${PKGIN_VERSION} -ge 230800 ]; then
 		verify_install_script_output
 	fi
 }
@@ -251,9 +251,9 @@ remove_script_output()
 		output_match_clean_pkg_install
 	fi
 	#
-	# Broken since 0.11.0 with in-place upgrades, fixed in NEXT.
+	# Broken since 0.11.0 with in-place upgrades, fixed in 23.8.0.
 	#
-	if [ ${PKGIN_VERSION} -lt 001100 -o ${PKGIN_VERSION} -gt 221000 ]; then
+	if [ ${PKGIN_VERSION} -lt 001100 -o ${PKGIN_VERSION} -ge 230800 ]; then
 		verify_install_script_output
 	fi
 }

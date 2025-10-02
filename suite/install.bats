@@ -127,11 +127,11 @@ teardown_file()
 	[ ${status} -eq 0 ]
 
 	#
-	# pkgin NEXT removes the update_localdb() output at the start.
+	# pkgin 23.8.0 removes the update_localdb() output at the start.
 	#
 	if [ ${PKGIN_VERSION} -lt 001000 ]; then
 		output_match "nothing to do"
-	elif [ ${PKGIN_VERSION} -le 221000 ]; then
+	elif [ ${PKGIN_VERSION} -lt 230800 ]; then
 		line_match 0 "reading local summary..."
 		line_match 5 "nothing to do"
 	else
