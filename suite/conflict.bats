@@ -76,6 +76,7 @@ teardown_file()
 #
 @test "${SUITE} attempt to not install @pkgcfl conflict package" {
 	skip_if_version -le 000800 "does not parse pkg_summary correctly"
+	skip_if_version -ge 250500 "handles conflicts differently"
 	if [ ${PKGIN_VERSION} -eq 200700 -o ${PKGIN_VERSION} -eq 200800 ]; then
 		skip "crashes due to NetBSDfr/pkgin#105"
 	fi
@@ -84,6 +85,7 @@ teardown_file()
 	output_match "conflict-pkg.* conflicts with installed package preserve"
 }
 @test "${SUITE} attempt to install @pkgcfl conflict package" {
+	skip_if_version -ge 250500 "handles conflicts differently"
 	run pkgin -y install conflict-pkg
 	[ ${status} -eq 1 ]
 	if [ ${PKGIN_VERSION} -gt 000800 ]; then
@@ -92,6 +94,7 @@ teardown_file()
 	output_match "pkg_install warnings: 0, errors: 1"
 }
 @test "${SUITE} verify pkg_install-err.log (@pkgcfl)" {
+	skip_if_version -ge 250500 "handles conflicts differently"
 	run cat ${PKG_INSTALL_LOG}
 	[ ${status} -eq 0 ]
 	output_match "Installed package.*preserve.*conflicts.*with.*conflict-pkg"
