@@ -111,6 +111,10 @@ teardown_file()
 	fi
 }
 
+@test "${SUITE} force pkgdb update" {
+	touch ${PKG_DBDIR}
+}
+
 @test "${SUITE} perform pkgin upgrade" {
 	run pkgin -y fug
 	[ ${status} -eq 0 ]
