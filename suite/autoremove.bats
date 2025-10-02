@@ -111,8 +111,17 @@ teardown_file()
 	fi
 }
 
+#
+# Trigger a pkgdb update so that code paths for keep package handling during a
+# summary update are exercised.  The overhaul in 23.8.0 unfortunately missed
+# this, so that e.g. manual pkg_add operations prior to a pkgin upgrade would
+# result in keep information being lost.  Thus this is skipped between 23.8.0
+# and 25.7.0.
+#
 @test "${SUITE} force pkgdb update" {
-	touch ${PKG_DBDIR}
+	if [ ${PKGIN_VERSION} -lt 230800 -o ${PKGIN_VERSION} -gt 250700 ]; then
+		touch ${PKG_DBDIR}
+	fi
 }
 
 @test "${SUITE} perform pkgin upgrade" {
