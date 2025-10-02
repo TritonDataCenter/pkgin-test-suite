@@ -245,7 +245,8 @@ remove_script_output()
 	remove_script_output
 	run pkgin -y full-upgrade
 	# pkgin 0.7.0 fails to upgrade pkg_install correctly
-	if [ ${PKGIN_VERSION} -ne 000700 ]; then
+	# pkgin 25.5.0 has uninitialized variable corruption
+	if [ ${PKGIN_VERSION} -ne 000700 -a ${PKGIN_VERSION} -ne 250500 ]; then
 		[ ${status} -eq 0 ]
 		output_match_clean_pkg_install
 	fi
