@@ -1,22 +1,30 @@
 name: Test pkgin
+x-const:
+  tarball_url: &TARBALL_URL "https://us-central.manta.mnx.io/pkgsrc/public/support/pkgin/pkgin-bins.tar.gz"
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       tarball_url:
         description: "URL of pkgin-bins.tar.gz file to download"
         required: false
-        default: "https://us-central.manta.mnx.io/pkgsrc/public/support/pkgin/pkgin-bins.tar.gz"
+        default: *TARBALL_URL
+env:
+  DEFAULT_TARBALL_URL: *TARBALL_URL
 jobs:
   fetch-bins:
     runs-on: ubuntu-24.04
+    env:
+      TARBALL_URL: ${{ github.event.inputs.tarball_url || env.DEFAULT_TARBALL_URL }}
     outputs:
       version: ${{ steps.generate-version.outputs.version }}
     steps:
       - name: Download URL
-        if: ${{ inputs.tarball_url != '' }}
         run: |
-          echo "Downloading tarball from URL: ${{ inputs.tarball_url }}"
-          curl -L -o artifact.tar.gz "${{ inputs.tarball_url }}"
+          echo "Downloading tarball from URL: ${TARBALL_URL}"
+          curl -L -o artifact.tar.gz "${TARBALL_URL}"
       - name: Extract tar.gz
         run: |
           sudo tar -xzvf artifact.tar.gz -C /
@@ -28,6 +36,8 @@ jobs:
   run-tests:
     needs: fetch-bins
     runs-on: ubuntu-24.04
+    env:
+      TARBALL_URL: ${{ github.event.inputs.tarball_url || env.DEFAULT_TARBALL_URL }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.fetch-bins.outputs.version) }}
@@ -35,10 +45,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Download URL
-        if: ${{ inputs.tarball_url != '' }}
         run: |
-          echo "Downloading tarball from URL: ${{ inputs.tarball_url }}"
-          curl -L -o artifact.tar.gz "${{ inputs.tarball_url }}"
+          echo "Downloading tarball from URL: ${TARBALL_URL}"
+          curl -L -o artifact.tar.gz "${TARBALL_URL}"
       - name: Extract tar.gz
         run: |
           sudo tar -xzvf artifact.tar.gz -C /
