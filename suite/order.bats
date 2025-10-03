@@ -16,6 +16,12 @@ INSTALL_OUTPUT="${SUITE_WORKDIR}/install-script-output"
 setup_file()
 {
 	#
+	# pkgin 25.5.0 has an uninitialised variable issue that this test
+	# suite triggers, so we just skip that version completely.
+	#
+	skip_if_version -eq 250500 "uninitialised variable corruption"
+
+	#
 	# Set up the first repository.
 	#
 	BUILD_DATE="${BUILD_DATE_1}"
@@ -245,8 +251,7 @@ remove_script_output()
 	remove_script_output
 	run pkgin -y full-upgrade
 	# pkgin 0.7.0 fails to upgrade pkg_install correctly
-	# pkgin 25.5.0 has uninitialized variable corruption
-	if [ ${PKGIN_VERSION} -ne 000700 -a ${PKGIN_VERSION} -ne 250500 ]; then
+	if [ ${PKGIN_VERSION} -ne 000700 ]; then
 		[ ${status} -eq 0 ]
 		output_match_clean_pkg_install
 	fi
