@@ -115,12 +115,14 @@ start_httpd()
 }
 stop_httpd()
 {
-	local pid=$(<${HTTPD_PID})
-	if [ -n "${pid}" ]; then
-		kill ${pid}
-		wait ${pid} 2>/dev/null || true
+	if [ -f ${HTTPD_PID} ]; then
+		local pid=$(<${HTTPD_PID})
+		if [ -n "${pid}" ]; then
+			kill ${pid}
+			wait ${pid} 2>/dev/null || true
+		fi
+		rm -f ${HTTPD_PID}
 	fi
-	rm -f ${HTTPD_PID}
 }
 
 #
