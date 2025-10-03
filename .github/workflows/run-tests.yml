@@ -1,6 +1,4 @@
 name: Test pkgin
-x-const:
-  tarball_url: &TARBALL_URL "https://us-central.manta.mnx.io/pkgsrc/public/support/pkgin/pkgin-bins.tar.gz"
 on:
   push:
     branches:
@@ -10,17 +8,21 @@ on:
       tarball_url:
         description: "URL of pkgin-bins.tar.gz file to download"
         required: false
-        default: *TARBALL_URL
-env:
-  DEFAULT_TARBALL_URL: *TARBALL_URL
+        default: &TARBALL_URL "https://us-central.manta.mnx.io/pkgsrc/public/support/pkgin/pkgin-bins.tar.gz"
 jobs:
   fetch-bins:
     runs-on: ubuntu-24.04
-    env:
-      TARBALL_URL: ${{ github.event.inputs.tarball_url || env.DEFAULT_TARBALL_URL }}
     outputs:
       version: ${{ steps.generate-version.outputs.version }}
     steps:
+      - name: Check for TARBALL_URL from workflow_dispatch
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tarball_url != '' }}
+        run: echo "TARBALL_URL=${{ github.event.inputs.tarball_url }}" >> "$GITHUB_ENV"
+      - name: Fall back on default TARBALL_URL if necessary
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.tarball_url == '' }}
+        env:
+          TARBALL_URL: *TARBALL_URL
+        run: echo "TARBALL_URL=$TARBALL_URL" >> "$GITHUB_ENV"
       - name: Download URL
         run: |
           echo "Downloading tarball from URL: ${TARBALL_URL}"
@@ -36,14 +38,20 @@ jobs:
   run-tests:
     needs: fetch-bins
     runs-on: ubuntu-24.04
-    env:
-      TARBALL_URL: ${{ github.event.inputs.tarball_url || env.DEFAULT_TARBALL_URL }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.fetch-bins.outputs.version) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Check for TARBALL_URL from workflow_dispatch
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tarball_url != '' }}
+        run: echo "TARBALL_URL=${{ github.event.inputs.tarball_url }}" >> "$GITHUB_ENV"
+      - name: Fall back on default TARBALL_URL if necessary
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.tarball_url == '' }}
+        env:
+          TARBALL_URL: *TARBALL_URL
+        run: echo "TARBALL_URL=$TARBALL_URL" >> "$GITHUB_ENV"
       - name: Download URL
         run: |
           echo "Downloading tarball from URL: ${TARBALL_URL}"
