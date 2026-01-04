@@ -47,7 +47,7 @@ export PKGIN PKGIN_DBDIR PKG_DBDIR PKG_INSTALL_DIR PKG_REPOS PACKAGES
 # scenarios.  These variables help to ensure they are set consistently and
 # avoid duplication across test suites.
 #
-# The REPO_DATE_* variables are used as the arguments to "touch -d" to set
+# The REPO_DATE_* variables are used as the arguments to "touch -t" to set
 # pkg_summary modification time so that Last-Modified changes across
 # repositories.
 #
@@ -56,10 +56,10 @@ export BUILD_DATE_2="1970-02-02 02:02:02 +0000"
 export BUILD_DATE_3="1970-03-03 03:03:03 +0000"
 export BUILD_DATE_4="1970-04-04 04:04:04 +0000"
 #
-export REPO_DATE_1="1970-01-01T01:01:01"
-export REPO_DATE_2="1970-02-02T02:02:02"
-export REPO_DATE_3="1970-03-03T03:03:03"
-export REPO_DATE_4="1970-04-04T04:04:04"
+export REPO_DATE_1="197001010101.01"
+export REPO_DATE_2="197002020202.02"
+export REPO_DATE_3="197003030303.03"
+export REPO_DATE_4="197004040404.04"
 
 #
 # Parallel test runs are only supported across test suites.  Individual tests
@@ -278,7 +278,7 @@ create_pkg_preserve()
 
 #
 # Create pkg_summary.gz.  If an argument is supplied it is expected to be a
-# valid time string argument for "touch -d" to set the timestamp on
+# valid time string argument for "touch -t" to set the timestamp on
 # pkg_summary.gz for its Last-Modified header which needs to be different for
 # pkgin to detect a remote repository update.
 #
@@ -289,7 +289,7 @@ create_pkg_summary()
 		cat ../pkginfo/* >pkg_summary
 		gzip -9 > pkg_summary.gz < pkg_summary
 		if [ -n "$1" ]; then
-			touch -d "$1" pkg_summary.gz
+			touch -t "$1" pkg_summary.gz
 		fi
 	)
 }
