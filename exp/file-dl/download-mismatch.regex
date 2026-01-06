@@ -1,4 +1,4 @@
-download error: download-mismatch-1.0 size does not match pkg_summary
+(pkgin: Hash mismatch .*/download-mismatch-1.0.tgz|download error: download-mismatch-1.0 size does not match pkg_summary)
 calculating dependencies...done.
 1 package to install:
   download-mismatch-1.0
