@@ -9,7 +9,7 @@ PKGIN?=		pkgin
 
 SUITES=		autoremove break-depends categories conflict empty
 SUITES+=	file-dl file-size http-dl invalid order provreq
-SUITES+=	install partial-upgrade upgrade
+SUITES+=	install partial-upgrade upgrade pkgin-upgrade
 SUITES+=	supersedes switch-repo
 
 #
