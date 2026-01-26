@@ -1,0 +1,6 @@
+llvm-19.1.7         Low Level Virtual Machine compiler infrastructure
+pkg_install-20250417 Package management and administration tools for pkgsrc
+pkgin-25.7.0        Apt / yum like tool for managing pkgsrc binary packages
+python312-3.12.11   Interpreted, interactive, object-oriented programming language
+readline-8.3nb1     GNU library that can recall and edit previous input
+sqlite3-3.50.4      SQL Database Engine in a C Library
