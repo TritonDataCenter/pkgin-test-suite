@@ -190,34 +190,40 @@ teardown_file()
 	fi
 }
 
-@test "${SUITE} test pkgin upgrade (output only)" {
-	skip_if_version -lt 221000 "Requires modern pkgin"
+@test "${SUITE} test first pkgin upgrade (output only)" {
+	skip_if_version -lt 260100 "Unsupported"
 	run pkgin -n upgrade
 	[ ${status} -eq 0 ]
 	file_match "upgrade-output-only.regex"
 }
 
-@test "${SUITE} test pkgin upgrade (for package tools)" {
-	skip_if_version -lt 221000 "Requires modern pkgin"
+@test "${SUITE} test first pkgin upgrade (for package tools)" {
+	skip_if_version -lt 260100 "Unsupported"
 	run pkgin -y upgrade
 	[ ${status} -eq 0 ]
 	file_match "upgrade-actual.regex"
 }
 
 @test "${SUITE} verify pkg_info after first upgrade" {
+	skip_if_version -lt 260100 "Unsupported"
 	compare_pkg_info "pkg_info.final"
 }
 
-@test "${SUITE} test pkgin upgrade (for rest)" {
-	skip_if_version -lt 221000 "Requires modern pkgin"
+@test "${SUITE} test second pkgin upgrade (output only)" {
+	skip_if_version -lt 260100 "Unsupported"
 	run pkgin -n upgrade
 	[ ${status} -eq 0 ]
 	file_match "upgrade-rest.regex"
 }
 
+@test "${SUITE} test second pkgin upgrade (for remaining packages)" {
+	skip_if_version -lt 260100 "Unsupported"
+	run pkgin -y upgrade
+	[ ${status} -eq 0 ]
+	file_match "upgrade-rest-actual.regex"
+}
 
 @test "${SUITE} verify pkgin list" {
-	skip_if_version -eq 000700 "NetBSDfr/pkgin#46 (uses parseable output)"
-	skip_if_version -eq 000800 "NetBSDfr/pkgin#46 (uses parseable output)"
+	skip_if_version -lt 260100 "Unsupported"
 	compare_pkgin_list "pkgin-list.final"
 }
