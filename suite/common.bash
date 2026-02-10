@@ -297,6 +297,17 @@ create_pkg_summary()
 		fi
 	)
 }
+create_pkg_summary_zst()
+{
+	(
+		cd ${PACKAGES}/All
+		cat ../pkginfo/* >pkg_summary
+		zstd -q > pkg_summary.zst < pkg_summary
+		if [ -n "$1" ]; then
+			touch -d "$1" pkg_summary.zst
+		fi
+	)
+}
 
 #
 # Override the SIZE_PKG calculation.

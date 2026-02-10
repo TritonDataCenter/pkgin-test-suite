@@ -10,7 +10,7 @@ PKGIN?=		pkgin
 SUITES=		autoremove break-depends categories conflict empty
 SUITES+=	file-dl file-size http-dl invalid order provreq
 SUITES+=	install partial-upgrade upgrade pkgin-upgrade
-SUITES+=	supersedes switch-repo
+SUITES+=	summary-zst supersedes switch-repo
 
 #
 # All configuration should be done by this point.  Start generating the test
