@@ -90,6 +90,10 @@ PKGIN_VERSION=$(printf "%02d%02d%02d" ${PKGIN_MAJOR} ${PKGIN_MINOR} ${PKGIN_PATC
 setup()
 {
 	set -eu
+	if [ -n "${SUITE_MIN_VERSION:-}" ] && \
+	    [ ${PKGIN_VERSION} -lt ${SUITE_MIN_VERSION} ]; then
+		skip "requires pkgin >= ${SUITE_MIN_VERSION}"
+	fi
 }
 teardown()
 {
