@@ -55,11 +55,13 @@ export BUILD_DATE_1="1970-01-01 01:01:01 +0000"
 export BUILD_DATE_2="1970-02-02 02:02:02 +0000"
 export BUILD_DATE_3="1970-03-03 03:03:03 +0000"
 export BUILD_DATE_4="1970-04-04 04:04:04 +0000"
+export BUILD_DATE_5="1970-05-05 05:05:05 +0000"
 #
 export REPO_DATE_1="1970-01-01T01:01:01"
 export REPO_DATE_2="1970-02-02T02:02:02"
 export REPO_DATE_3="1970-03-03T03:03:03"
 export REPO_DATE_4="1970-04-04T04:04:04"
+export REPO_DATE_5="1970-05-05T05:05:05"
 
 #
 # Parallel test runs are only supported across test suites.  Individual tests

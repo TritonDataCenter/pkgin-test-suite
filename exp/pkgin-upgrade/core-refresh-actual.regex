@@ -1,0 +1,16 @@
+calculating dependencies...done.
+2 packages to refresh:
+pkg_install-20250417 pkgin-25.10.0
+1 package to upgrade:
+llvm-19.1.8
+0 to remove, 2 to refresh, 1 to upgrade, 0 to install
+[0-9]+B to download, [0-9]+B of additional disk space will be used
+.1/3. downloading llvm-19.1.8.tgz done.
+.2/3. downloading pkg_install-20250417.tgz done.
+.3/3. downloading pkgin-25.10.0.tgz done.
+.1/3. refreshing pkg_install-20250417...
+.2/3. refreshing pkgin-25.10.0...
+.3/3. upgrading llvm-19.1.8...
+pkg_install warnings: 0, errors: 0
+reading local summary...
+processing local summary...

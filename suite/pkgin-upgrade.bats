@@ -7,6 +7,7 @@
 #
 
 SUITE="pkgin-upgrade"
+SUITE_MIN_VERSION="260400"
 
 load common
 
@@ -148,6 +149,253 @@ setup_file()
 	create_pkg_summary "${REPO_DATE}"
 
 	#
+	# Set up the third repository.  This tests that upgrading only a
+	# pkgin dependency (sqlite3) without upgrading pkgin or pkg_install
+	# themselves does not falsely trigger the "Package tools were
+	# upgraded" message.
+	#
+	# All packages are identical to repo2 (same version, same
+	# BUILD_DATE) except sqlite3 which is upgraded to 3.52.0.
+	#
+	BUILD_DATE="${BUILD_DATE_2}"
+	PACKAGES="${SUITE_WORKDIR}/repo3"
+	PKG_WORKDIR="${SUITE_WORKDIR}/pkg3"
+	REPO_DATE="${REPO_DATE_3}"
+
+	create_pkg_buildinfo "readline-8.3nb1" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=devel" \
+	    "PKGPATH=devel/readline"
+	create_pkg_comment "readline-8.3nb1" "GNU library that can recall and edit previous input"
+	create_pkg_file "readline-8.3nb1" "lib/libreadline.so"
+	create_pkg "readline-8.3nb1"
+
+	create_pkg_buildinfo "sqlite3-3.52.0" \
+	    "BUILD_DATE=${BUILD_DATE_3}" \
+	    "CATEGORIES=databases" \
+	    "PKGPATH=databases/sqlite3"
+	create_pkg_comment "sqlite3-3.52.0" "SQL Database Engine in a C Library"
+	create_pkg_file "sqlite3-3.52.0" "lib/libsqlite3.so"
+	create_pkg "sqlite3-3.52.0"
+
+	create_pkg_buildinfo "pkg_install-20250417" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=pkgtools" \
+	    "PKGPATH=pkgtools/pkg_install"
+	create_pkg_comment "pkg_install-20250417" "Package management and administration tools for pkgsrc"
+	create_pkg_file "pkg_install-20250417" "sbin/pkg_add"
+	create_pkg "pkg_install-20250417"
+
+	create_pkg_buildinfo "pkgin-25.10.0" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=pkgtools" \
+	    "PKGPATH=pkgtools/pkgin"
+	create_pkg_comment "pkgin-25.10.0" "Apt / yum like tool for managing pkgsrc binary packages"
+	create_pkg_file "pkgin-25.10.0" "bin/pkgin"
+	create_pkg "pkgin-25.10.0" -P "pkg_install>=20250417 sqlite3>=3.50"
+
+	create_pkg_buildinfo "mpdecimal-4.0.1" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=math" \
+	    "PKGPATH=math/mpdecimal"
+	create_pkg_comment "mpdecimal-4.0.1" "C/C++ arbitrary precision decimal floating point libraries"
+	create_pkg_file "mpdecimal-4.0.1" "lib/libmpdec.so"
+	create_pkg "mpdecimal-4.0.1"
+
+	create_pkg_buildinfo "python312-3.12.12" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/python312"
+	create_pkg_comment "python312-3.12.12" "Interpreted, interactive, object-oriented programming language"
+	create_pkg_file "python312-3.12.12" "bin/python3.12"
+	create_pkg "python312-3.12.12" -P "readline-[0-9]* sqlite3>=3.50"
+
+	create_pkg_buildinfo "python313-3.13.11" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/python313"
+	create_pkg_comment "python313-3.13.11" "Interpreted, interactive, object-oriented programming language"
+	create_pkg_file "python313-3.13.11" "bin/python3.13"
+	create_pkg "python313-3.13.11" -P "mpdecimal>=4.0.1 readline-[0-9]*"
+
+	create_pkg_buildinfo "llvm-19.1.7" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/llvm"
+	create_pkg_comment "llvm-19.1.7" "Low Level Virtual Machine compiler infrastructure"
+	create_pkg_file "llvm-19.1.7" "bin/llvm-config"
+	create_pkg "llvm-19.1.7" -P "python313>=3.13"
+
+	create_pkg_summary "${REPO_DATE}"
+
+	#
+	# Set up the fourth repository.  This tests that when the package
+	# tools only have a BUILD_DATE change (ACTION_REFRESH) and some
+	# other package has a version upgrade, the upgrade completes in
+	# a single pass without triggering the "Package tools were upgraded"
+	# message.
+	#
+	# pkg_install and pkgin get a new BUILD_DATE only (refresh), while
+	# llvm gets a version bump to 19.1.8 (upgrade).
+	#
+	BUILD_DATE="${BUILD_DATE_4}"
+	PACKAGES="${SUITE_WORKDIR}/repo4"
+	PKG_WORKDIR="${SUITE_WORKDIR}/pkg4"
+	REPO_DATE="${REPO_DATE_4}"
+
+	create_pkg_buildinfo "readline-8.3nb1" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=devel" \
+	    "PKGPATH=devel/readline"
+	create_pkg_comment "readline-8.3nb1" "GNU library that can recall and edit previous input"
+	create_pkg_file "readline-8.3nb1" "lib/libreadline.so"
+	create_pkg "readline-8.3nb1"
+
+	create_pkg_buildinfo "sqlite3-3.52.0" \
+	    "BUILD_DATE=${BUILD_DATE_3}" \
+	    "CATEGORIES=databases" \
+	    "PKGPATH=databases/sqlite3"
+	create_pkg_comment "sqlite3-3.52.0" "SQL Database Engine in a C Library"
+	create_pkg_file "sqlite3-3.52.0" "lib/libsqlite3.so"
+	create_pkg "sqlite3-3.52.0"
+
+	# pkg_install refreshed with new BUILD_DATE
+	create_pkg_buildinfo "pkg_install-20250417" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=pkgtools" \
+	    "PKGPATH=pkgtools/pkg_install"
+	create_pkg_comment "pkg_install-20250417" "Package management and administration tools for pkgsrc"
+	create_pkg_file "pkg_install-20250417" "sbin/pkg_add"
+	create_pkg "pkg_install-20250417"
+
+	# pkgin refreshed with new BUILD_DATE
+	create_pkg_buildinfo "pkgin-25.10.0" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=pkgtools" \
+	    "PKGPATH=pkgtools/pkgin"
+	create_pkg_comment "pkgin-25.10.0" "Apt / yum like tool for managing pkgsrc binary packages"
+	create_pkg_file "pkgin-25.10.0" "bin/pkgin"
+	create_pkg "pkgin-25.10.0" -P "pkg_install>=20250417 sqlite3>=3.50"
+
+	create_pkg_buildinfo "mpdecimal-4.0.1" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=math" \
+	    "PKGPATH=math/mpdecimal"
+	create_pkg_comment "mpdecimal-4.0.1" "C/C++ arbitrary precision decimal floating point libraries"
+	create_pkg_file "mpdecimal-4.0.1" "lib/libmpdec.so"
+	create_pkg "mpdecimal-4.0.1"
+
+	create_pkg_buildinfo "python312-3.12.12" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/python312"
+	create_pkg_comment "python312-3.12.12" "Interpreted, interactive, object-oriented programming language"
+	create_pkg_file "python312-3.12.12" "bin/python3.12"
+	create_pkg "python312-3.12.12" -P "readline-[0-9]* sqlite3>=3.50"
+
+	create_pkg_buildinfo "python313-3.13.11" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/python313"
+	create_pkg_comment "python313-3.13.11" "Interpreted, interactive, object-oriented programming language"
+	create_pkg_file "python313-3.13.11" "bin/python3.13"
+	create_pkg "python313-3.13.11" -P "mpdecimal>=4.0.1 readline-[0-9]*"
+
+	# llvm upgraded to 19.1.8
+	create_pkg_buildinfo "llvm-19.1.8" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/llvm"
+	create_pkg_comment "llvm-19.1.8" "Low Level Virtual Machine compiler infrastructure"
+	create_pkg_file "llvm-19.1.8" "bin/llvm-config"
+	create_pkg "llvm-19.1.8" -P "python313>=3.13"
+
+	create_pkg_summary "${REPO_DATE}"
+
+	#
+	# Set up the fifth repository.  This tests that when both core
+	# package tools have a version upgrade (not just a refresh), the
+	# two-pass flow is correctly triggered.  This exercises the
+	# short-circuit path in check_core_upgrade() where the upgrade
+	# flag is set on the first iteration.
+	#
+	# Both pkg_install and pkgin get version bumps; nothing else
+	# changes.
+	#
+	BUILD_DATE="${BUILD_DATE_5}"
+	PACKAGES="${SUITE_WORKDIR}/repo5"
+	PKG_WORKDIR="${SUITE_WORKDIR}/pkg5"
+	REPO_DATE="${REPO_DATE_5}"
+
+	create_pkg_buildinfo "readline-8.3nb1" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=devel" \
+	    "PKGPATH=devel/readline"
+	create_pkg_comment "readline-8.3nb1" "GNU library that can recall and edit previous input"
+	create_pkg_file "readline-8.3nb1" "lib/libreadline.so"
+	create_pkg "readline-8.3nb1"
+
+	create_pkg_buildinfo "sqlite3-3.52.0" \
+	    "BUILD_DATE=${BUILD_DATE_3}" \
+	    "CATEGORIES=databases" \
+	    "PKGPATH=databases/sqlite3"
+	create_pkg_comment "sqlite3-3.52.0" "SQL Database Engine in a C Library"
+	create_pkg_file "sqlite3-3.52.0" "lib/libsqlite3.so"
+	create_pkg "sqlite3-3.52.0"
+
+	# pkg_install upgraded to new version
+	create_pkg_buildinfo "pkg_install-20250418" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=pkgtools" \
+	    "PKGPATH=pkgtools/pkg_install"
+	create_pkg_comment "pkg_install-20250418" "Package management and administration tools for pkgsrc"
+	create_pkg_file "pkg_install-20250418" "sbin/pkg_add"
+	create_pkg "pkg_install-20250418"
+
+	# pkgin upgraded to new version
+	create_pkg_buildinfo "pkgin-25.11.0" \
+	    "BUILD_DATE=${BUILD_DATE}" \
+	    "CATEGORIES=pkgtools" \
+	    "PKGPATH=pkgtools/pkgin"
+	create_pkg_comment "pkgin-25.11.0" "Apt / yum like tool for managing pkgsrc binary packages"
+	create_pkg_file "pkgin-25.11.0" "bin/pkgin"
+	create_pkg "pkgin-25.11.0" -P "pkg_install>=20250417 sqlite3>=3.50"
+
+	create_pkg_buildinfo "mpdecimal-4.0.1" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=math" \
+	    "PKGPATH=math/mpdecimal"
+	create_pkg_comment "mpdecimal-4.0.1" "C/C++ arbitrary precision decimal floating point libraries"
+	create_pkg_file "mpdecimal-4.0.1" "lib/libmpdec.so"
+	create_pkg "mpdecimal-4.0.1"
+
+	create_pkg_buildinfo "python312-3.12.12" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/python312"
+	create_pkg_comment "python312-3.12.12" "Interpreted, interactive, object-oriented programming language"
+	create_pkg_file "python312-3.12.12" "bin/python3.12"
+	create_pkg "python312-3.12.12" -P "readline-[0-9]* sqlite3>=3.50"
+
+	create_pkg_buildinfo "python313-3.13.11" \
+	    "BUILD_DATE=${BUILD_DATE_2}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/python313"
+	create_pkg_comment "python313-3.13.11" "Interpreted, interactive, object-oriented programming language"
+	create_pkg_file "python313-3.13.11" "bin/python3.13"
+	create_pkg "python313-3.13.11" -P "mpdecimal>=4.0.1 readline-[0-9]*"
+
+	create_pkg_buildinfo "llvm-19.1.8" \
+	    "BUILD_DATE=${BUILD_DATE_4}" \
+	    "CATEGORIES=lang" \
+	    "PKGPATH=lang/llvm"
+	create_pkg_comment "llvm-19.1.8" "Low Level Virtual Machine compiler infrastructure"
+	create_pkg_file "llvm-19.1.8" "bin/llvm-config"
+	create_pkg "llvm-19.1.8" -P "python313>=3.13"
+
+	create_pkg_summary "${REPO_DATE}"
+
+	#
 	# Start with the first repository, we'll switch to subsequent
 	# repositories by updating the symlink.
 	#
@@ -191,39 +439,142 @@ teardown_file()
 }
 
 @test "${SUITE} test first pkgin upgrade (output only)" {
-	skip_if_version -lt 260100 "Unsupported"
 	run pkgin -n upgrade
 	[ ${status} -eq 0 ]
 	file_match "upgrade-output-only.regex"
 }
 
 @test "${SUITE} test first pkgin upgrade (for package tools)" {
-	skip_if_version -lt 260100 "Unsupported"
 	run pkgin -y upgrade
 	[ ${status} -eq 0 ]
 	file_match "upgrade-actual.regex"
 }
 
 @test "${SUITE} verify pkg_info after first upgrade" {
-	skip_if_version -lt 260100 "Unsupported"
 	compare_pkg_info "pkg_info.final"
 }
 
 @test "${SUITE} test second pkgin upgrade (output only)" {
-	skip_if_version -lt 260100 "Unsupported"
 	run pkgin -n upgrade
 	[ ${status} -eq 0 ]
 	file_match "upgrade-rest.regex"
 }
 
 @test "${SUITE} test second pkgin upgrade (for remaining packages)" {
-	skip_if_version -lt 260100 "Unsupported"
 	run pkgin -y upgrade
 	[ ${status} -eq 0 ]
 	file_match "upgrade-rest-actual.regex"
 }
 
 @test "${SUITE} verify pkgin list" {
-	skip_if_version -lt 260100 "Unsupported"
 	compare_pkgin_list "pkgin-list.final"
+}
+
+#
+# Test that upgrading only a pkgin dependency does not falsely trigger
+# the "Package tools were upgraded" message.  In repo3 only sqlite3 is
+# upgraded; pkgin and pkg_install are unchanged.
+#
+@test "${SUITE} switch to dep-only upgrade repository" {
+	run rm ${SUITE_WORKDIR}/packages
+	[ ${status} -eq 0 ]
+
+	run ln -s repo3 ${SUITE_WORKDIR}/packages
+	[ ${status} -eq 0 ]
+}
+
+@test "${SUITE} test dep-only upgrade (output only)" {
+	run pkgin -n upgrade
+	[ ${status} -eq 0 ]
+	file_match "deponly-output-only.regex"
+}
+
+@test "${SUITE} test dep-only upgrade completes in single pass" {
+	run pkgin -y upgrade
+	[ ${status} -eq 0 ]
+	output_not_match "Package tools were upgraded"
+	file_match "deponly-actual.regex"
+}
+
+@test "${SUITE} verify nothing to do after dep-only upgrade" {
+	run pkgin -y upgrade
+	[ ${status} -eq 0 ]
+	output_match "nothing to do"
+}
+
+@test "${SUITE} verify pkg_info after dep-only upgrade" {
+	compare_pkg_info "pkg_info.deponly"
+}
+
+#
+# Test that when the core package tools only have BUILD_DATE changes
+# (ACTION_REFRESH) the upgrade is handled inline rather than via the
+# two-pass core-first flow, even when another package has a version
+# upgrade.
+#
+@test "${SUITE} switch to core-refresh repository" {
+	run rm ${SUITE_WORKDIR}/packages
+	[ ${status} -eq 0 ]
+
+	run ln -s repo4 ${SUITE_WORKDIR}/packages
+	[ ${status} -eq 0 ]
+}
+
+@test "${SUITE} test core-refresh upgrade (output only)" {
+	run pkgin -n upgrade
+	[ ${status} -eq 0 ]
+	file_match "core-refresh-output-only.regex"
+}
+
+@test "${SUITE} test core-refresh upgrade completes in single pass" {
+	run pkgin -y upgrade
+	[ ${status} -eq 0 ]
+	output_not_match "Package tools were upgraded"
+	file_match "core-refresh-actual.regex"
+}
+
+@test "${SUITE} verify nothing to do after core-refresh upgrade" {
+	run pkgin -y upgrade
+	[ ${status} -eq 0 ]
+	output_match "nothing to do"
+}
+
+@test "${SUITE} verify pkg_info after core-refresh upgrade" {
+	compare_pkg_info "pkg_info.core-refresh"
+}
+
+#
+# Test that when both core package tools have a version upgrade the
+# two-pass flow is triggered and the "Package tools were upgraded"
+# message is printed.
+#
+@test "${SUITE} switch to core-upgrade repository" {
+	run rm ${SUITE_WORKDIR}/packages
+	[ ${status} -eq 0 ]
+
+	run ln -s repo5 ${SUITE_WORKDIR}/packages
+	[ ${status} -eq 0 ]
+}
+
+@test "${SUITE} test core-upgrade upgrade (output only)" {
+	run pkgin -n upgrade
+	[ ${status} -eq 0 ]
+	file_match "core-upgrade-output-only.regex"
+}
+
+@test "${SUITE} test core-upgrade first pass upgrades package tools" {
+	run pkgin -y upgrade
+	[ ${status} -eq 0 ]
+	output_match "Package tools were upgraded"
+	file_match "core-upgrade-actual.regex"
+}
+
+@test "${SUITE} verify nothing to do after core-upgrade second pass" {
+	run pkgin -y upgrade
+	[ ${status} -eq 0 ]
+	output_match "nothing to do"
+}
+
+@test "${SUITE} verify pkg_info after core-upgrade upgrade" {
+	compare_pkg_info "pkg_info.core-upgrade"
 }

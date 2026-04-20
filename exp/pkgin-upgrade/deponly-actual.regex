@@ -1,10 +1,10 @@
 calculating dependencies...done.
-1 package to refresh:
-readline-8.3nb1
-0 to remove, 1 to refresh, 0 to upgrade, 0 to install
+1 package to upgrade:
+sqlite3-3.52.0
+0 to remove, 0 to refresh, 1 to upgrade, 0 to install
 [0-9]+B to download, [0-9]+B of additional disk space will be used
-.1/1. downloading readline-8.3nb1.tgz done.
-.1/1. refreshing readline-8.3nb1...
+.1/1. downloading sqlite3-3.52.0.tgz done.
+.1/1. upgrading sqlite3-3.52.0...
 pkg_install warnings: 0, errors: 0
 reading local summary...
 processing local summary...
